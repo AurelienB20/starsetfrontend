@@ -25,6 +25,7 @@ const AddJobScreen = () => {
 
       const data = await response.json();
       setMetierNames(data.metierNames);
+      console.log()
     } catch (error) {
       console.error('Une erreur est survenue lors de la récupération des métiers:', error);
     }
@@ -62,7 +63,6 @@ const AddJobScreen = () => {
         value={searchTerm}
         onChangeText={setSearchTerm} // Met à jour le terme de recherche
       />
-
       {/* Affichage des métiers filtrés */}
       {filteredMetiers.map((metier : any, index) => (
         <TouchableOpacity
@@ -71,7 +71,7 @@ const AddJobScreen = () => {
           onPress={() => gotoJobView(metier)} // Remplace cette ligne par la navigation si nécessaire
         >
           <Image
-            source={{uri : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png' }} // Remplace cette ligne avec les bonnes images
+            source={{ uri: metier.picture_url ? metier.picture_url : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png' }}
             style={styles.jobImage}
           />
           <Text style={styles.jobTitle}>{metier.name.toUpperCase()}</Text>
@@ -110,6 +110,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     marginBottom: 15,
+    width : '100%'
   },
   jobImage: {
     width: 50,
@@ -118,7 +119,8 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: 'bold',//
+    flexShrink: 1, // Empêche le débordement du texte
   },
 });
 

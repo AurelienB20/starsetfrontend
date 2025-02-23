@@ -10,7 +10,7 @@ const ChatScreen = () => {
   const [messages, setMessages] = useState<any>([]);
   const navigation = useNavigation();
   const route = useRoute() as any;
-  const { conversation_id, sender_id, sender_type } = route.params || {};
+  const { conversation_id, sender_id, sender_type , contact_profile_picture_url, contact_firstname} = route.params || {};
 
   const getAllMessages = async () => {
     try {
@@ -93,10 +93,10 @@ const ChatScreen = () => {
       {/* Placeholder image at the top center */}
       <View style={styles.header}>
         <Image
-          source={{ uri: 'https://img.20mn.fr/wb0GX0XqSd2N4Y3ItfLEGik/1444x920_squeezie-youtubeur-chanteur-et-desormais-auteur-de-bd' }} // Placeholder for user avatar
+          source={{ uri: contact_profile_picture_url }} // Placeholder for user avatar
           style={styles.headerImage}
         />
-        <Text style={styles.headerName}>Louise</Text>
+        <Text style={styles.headerName}>{contact_firstname}</Text>
       </View>
 
       {/* Scrollable message list */}
@@ -110,12 +110,7 @@ const ChatScreen = () => {
               message.sender_id === sender_id ? styles.myMessage : styles.otherMessage,
             ]}
           >
-            {message.sender_id !== sender_id && (
-              <Image
-                source={{ uri: 'https://img.20mn.fr/wb0GX0XqSd2N4Y3ItfLEGik/1444x920_squeezie-youtubeur-chanteur-et-desormais-auteur-de-bd' }} // Placeholder for user avatar
-                style={styles.avatar}
-              />
-            )}
+            
             <View style={message.sender_id === sender_id ? styles.myTextWrapper : styles.otherTextWrapper}>
               <Text style={styles.messageText}>{message.message_text}</Text>
             </View>
@@ -189,13 +184,13 @@ const styles = StyleSheet.create({
   myTextWrapper: {
     backgroundColor: '#FFEB3B',
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 20,
     maxWidth: '70%',
   },
   otherTextWrapper: {
     backgroundColor: '#E0E0E0',
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 20,
     maxWidth: '70%',
   },
   messageText: {

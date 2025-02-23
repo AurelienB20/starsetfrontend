@@ -29,35 +29,10 @@ const CreationScreen = () => {
   const handleSubmit = async () => {
     if (password==confirmPassword)  {
       console.log(password)
-      try {
-        const response = await fetch(`${config.backendUrl}/api/auth/register`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-  
-        const data = await response.json();
-        console.log(data)
-        if (data.success) {
-          // Rediriger ou faire autre chose en cas de succès
-          console.log(data);
-          console.log(data.account)
-          console.log(data.account['id'])
-          saveData(data.account['id'])
-          navigation.navigate('accountInfo' as never); // Par exemple, pour naviguer vers la page d'accueil
-          
-        } else {
-          setErrorMessage('Email ou mot de passe incorrect');
-        }
-      } catch (error) {
-        setErrorMessage('Une erreur est survenue. Veuillez réessayer.');
-      } finally {
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-      }
+      navigation.navigate({
+        name: 'selectFields',
+        params: {email : email, password : password},
+      } as never);
     }
     
   };

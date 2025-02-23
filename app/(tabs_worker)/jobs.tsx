@@ -12,6 +12,8 @@ const JobsScreen = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [prestations, setPrestations] = useState([]); 
   const [metierNames, setMetierNames] = useState([]); 
+  const [isInProgressModalVisible, setInProgressModalVisible] = useState(false); // Popup "En Cours"
+
 
   const handleJobSelection = (jobTitle : any) => {
     setSelectedJob(jobTitle);
@@ -109,6 +111,14 @@ const JobsScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.iconContainer}>
+        <TouchableOpacity onPress={() => setInProgressModalVisible(true)}>
+          <View style={styles.iconCircle}>
+            <FontAwesome name="coffee" size={20} color="white" />
+          </View>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.title}>MY JOBS</Text>
       <TextInput
         style={styles.searchInput}
@@ -135,42 +145,7 @@ const JobsScreen = () => {
         </TouchableOpacity>
       ))}
 
-      <TouchableOpacity style={styles.newJobButton} onPress={() => setModalVisible(true)}>
-        <Text style={styles.newJobButtonText}>Nouveau</Text>
-      </TouchableOpacity>
-
-      {/* Modal for job selection */}
-      <Modal
-        transparent={true}
-        visible={isModalVisible}
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Sélectionner un job</Text>
-            {metierNames.map((metier : any, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[styles.modalOption, isSelected(metier.name) && styles.selectedOption]}
-                onPress={() => handleJobSelection(metier.name)}
-              >
-                <Text style={[styles.modalOptionText, isSelected(metier.name) && styles.selectedOptionText]}>
-                  {metier.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.validateButton} onPress={handleValidation}>
-                <Text style={styles.validateButtonText}>Valider</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.closeButtonText}>Fermer</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      
 
       {/* New Modal for "Demande de missions" */}
       <Modal
@@ -192,6 +167,69 @@ const JobsScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity style={styles.acceptButton} onPress={() => setRequestModalVisible(false)}>
               <Text style={styles.acceptButtonText}>ACCEPTER L'OFFRE 🤝</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        transparent={true}
+        visible={isInProgressModalVisible}
+        animationType="slide"
+        onRequestClose={() => setInProgressModalVisible(false)} // Ferme le modal avec le bouton "Retour"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>EN COURS</Text>
+            <Text style={styles.modalSubtitle}>Février</Text>
+
+            {/* Exemples de missions */}
+            <View style={styles.missionInProgressItemContainer}>
+            <TouchableOpacity style={styles.missionItem}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FontAwesome name="calendar" size={24} color="#00cc66" />
+                <View style={{ marginLeft: 10 }}>
+                  <Text style={styles.missionInProgressText}>Babysitting</Text>
+                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
+                </View>
+              </View>
+              <Text style={styles.missionPrice}>20,00€</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.missionItem}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FontAwesome name="calendar" size={24} color="#00cc66" />
+                <View style={{ marginLeft: 10 }}>
+                  <Text style={styles.missionInProgressText}>Ménage</Text>
+                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
+                </View>
+              </View>
+              <Text style={styles.missionPrice}>5,00€</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.missionItem}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FontAwesome name="calendar" size={24} color="#00cc66" />
+                <View style={{ 
+                  marginLeft: 10,
+                  flexDirection : 'column',
+                  alignItems : 'flex-start',
+                  justifyContent : 'flex-start'
+
+                 }}>
+                  <Text style={styles.missionInProgressText}>Manucure</Text>
+                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
+                </View>
+              </View>
+              <Text style={styles.missionPrice}>35,00€</Text>
+            </TouchableOpacity>
+            </View>
+
+            {/* Bouton pour fermer le modal */}
+            <TouchableOpacity
+              style={styles.inProgressCloseButton}
+              onPress={() => setInProgressModalVisible(false)}
+            >
+              <Text style={styles.inProgressCloseButtonText}>FERMER</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -369,6 +407,77 @@ const styles = StyleSheet.create({
   acceptButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+
+  iconContainer: {
+    width : '100%',
+    alignItems : 'flex-end',
+    justifyContent  : 'flex-end',
+    marginTop : 10,
+    zIndex: 10, // Assure que l'icône est au-dessus du reste du contenu
+  },
+  iconCircle: {
+    backgroundColor: '#00cc66', // Vert
+    width: 40, // Taille du cercle
+    height: 40,
+    borderRadius: 20, // Cercle parfait
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalSubtitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#00cc66',
+    textAlign: 'center',
+  },
+  
+  missionItem: {
+    width : '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Équilibre entre les éléments
+    marginVertical: 10,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: '#e0e0e0', // Couleur claire pour la bordure
+    position: 'relative',
+  },
+
+  missionInProgressItemContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginVertical: 10,
+  },
+  missionInProgressText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  inProgressCloseButton: {
+    backgroundColor: '#FF3B30',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  inProgressCloseButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+
+  missionTime: {
+    fontSize: 14,
+    color: '#666', // Gris clair
+  },
+  missionPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#00cc66', // Vert
+    position: 'absolute',
+    right: 10, // Alignement à droite
   },
 });
 

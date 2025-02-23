@@ -54,16 +54,17 @@ const ChooseAccountScreen = () => {
       <View style={styles.typeofprofile}>
         <TouchableOpacity style={styles.square} onPress={handleUserPress}>
           <Image 
-            source={require('../assets/images/loupe.png')}
+            source={{ uri : "https://cdn-icons-png.flaticon.com/512/177/177871.png"}}
             style={styles.image}
           />
           <Text style={styles.squaretitle}>User</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.square} onPress={handleWorkerPress}>
-          <Image 
-            source={require('../assets/images/loupe.png')}
-            style={styles.image}
-          />
+        <Image 
+          source={{ uri: "https://w7.pngwing.com/pngs/633/852/png-transparent-computer-icons-laborer-construction-worker-industrial-worker-photography-people-silhouette-thumbnail.png" }} 
+          style={styles.image} 
+        />
+
           <Text style={styles.squaretitle}>Worker</Text>
         </TouchableOpacity>
       </View>

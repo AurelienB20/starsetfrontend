@@ -8,6 +8,9 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
+
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -30,28 +33,49 @@ export default function TabLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: 'home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: '',
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require('../../assets/images/maison.png')}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
+          )
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
-          title: 'search',
-          tabBarIcon: ({ color }) =><Ionicons name="search-outline" size={28} color={color} />,
+          title: '',
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require('../../assets/images/loupe.png')}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
+          )
+        }}
+      />  
+      <Tabs.Screen
+        name="ia"
+        options={{
+          title: '',
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="brain" size={24} color={color} />
+          )
         }}
       />
       <Tabs.Screen
         name="conversation"
         options={{
-          title: 'conversation',
+          title: '',
           tabBarIcon: ({ color }) => <Ionicons name="chatbubbles-outline" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="account"
         options={{
-          title: 'account',
+          title: '',
           tabBarIcon: ({ color }) => <Ionicons name="person" size={28} color={color} />,
         }}
       />

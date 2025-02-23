@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, Alert, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, Alert, Modal, TouchableWithoutFeedback } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,7 +12,7 @@ const PrestationScreen = () => {
   const [description, setDescription] = useState('');
   const [selectedTab, setSelectedTab] = useState('photos'); // 'photos', 'experiences', or 'certifications'
   const [isEditing, setIsEditing] = useState(false);
-  const [prestationPhotos, setPrestationPhotos] = useState([])
+  const [prestationPhotos, setPrestationPhotos] = useState<any>([])
   const [uploading, setUploading] = useState<boolean>(false);
   const [prestation, setPrestation] = useState({
     id: '',
@@ -38,6 +38,8 @@ const PrestationScreen = () => {
   const [certificationDate, setCertificationDate] = useState('');
   const [certificationDescription, setCertificationDescription] = useState('');
   const [certificationImage, setCertificationImage] = useState<any>(null);
+  const [isImageModalVisible, setImageModalVisible] = useState(false); // Contrôle de la visibilité du modal
+  const [selectedImage, setSelectedImage] = useState(null); // Image sélectionnée
 
   const route = useRoute() as any;
   const prestation_id = route.params?.id;
@@ -69,30 +71,80 @@ const PrestationScreen = () => {
     }
   };
 
+  const handleDeletePhoto = async (index : any) => {
+    const photoToDelete = prestationPhotos[index]; // Récupérer la photo à supprimer
+    const photoAdress = photoToDelete.adress; // Assurez-vous que l'ID de la photo est disponible
+  
+    Alert.alert(
+      "Supprimer la photo",
+      "Êtes-vous sûr de vouloir supprimer cette photo ?",
+      [
+        {
+          text: "Annuler",
+          style: "cancel",
+        },
+        {
+          text: "Supprimer",
+          onPress: async () => {
+            try {
+              const response = await fetch(`${config.backendUrl}/api/uploads/delete-photo`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ adress: photoAdress }),
+              });
+  
+              if (!response.ok) {
+                console.log(response)
+                throw new Error('Erreur lors de la suppression de la photo');
+              }
+  
+              const data = await response.json();
+  
+              if (data.success) {
+                // Supprimez la photo localement
+                const updatedPhotos = [...prestationPhotos];
+                updatedPhotos.splice(index, 1); // Supprimez la photo à l'index donné
+                setPrestationPhotos(updatedPhotos);
+                Alert.alert("Succès", "La photo a été supprimée avec succès.");
+              } else {
+                Alert.alert("Erreur", data.message || "Une erreur est survenue.");
+              }
+            } catch (error) {
+              console.error("Erreur lors de la suppression de la photo :", error);
+              Alert.alert("Erreur", "Impossible de supprimer la photo.");
+            }
+          },
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
   const addPrestationPhoto = async () => {
-    console.log(1234)
-    const options = {
-      mediaType: 'photo',
-    };
-    let photo : any = null
-    await launchImageLibrary(options as any, (response: any) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
-      } else if (response.customButton) {
-        console.log('User tapped custom button: ', response.customButton);
-      } else {
-        photo = { uri: response.assets[0].uri };
-        
-      }
+    // Demander la permission d'accès à la bibliothèque d'images
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+    if (!permissionResult.granted) {
+      Alert.alert('Permission refusée', 'Vous devez autoriser l\'accès à la galerie pour continuer.');
+      return;
+    }
+  
+    // Ouvrir la bibliothèque d'images
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      //allowsEditing: true, // Permet de recadrer l'image si besoin
+      quality: 1, // Qualité maximale
     });
-    console.log(1)
-    if (!photo) {
-      console.log(2)
+  
+    if (result.canceled) {
+      console.log('L\'utilisateur a annulé la sélection d\'image.');
       Alert.alert('Erreur', 'Aucune photo sélectionnée');
       return;
     }
+  
+    const photo = { uri: result.assets[0].uri };
 
     setUploading(true);
 
@@ -111,7 +163,7 @@ const PrestationScreen = () => {
           mimetype: 'image/jpeg', // Type MIME de l'image
           data: base64Data,   // Base64 ou blob
         };
-        console.log(file)
+        
         const object_id=prestation.id
         const type_object = 'prestation'
 
@@ -128,6 +180,9 @@ const PrestationScreen = () => {
           const responseData = await uploadResponse.json();
           console.log('Upload success:', responseData);
           Alert.alert('Succès', 'Photo téléchargée avec succès');
+          if (responseData.dbRecord) {
+            setPrestationPhotos((prevPhotos : any) => [...prevPhotos, responseData.dbRecord]);
+          }
         } else {
           console.log('Upload failed:', uploadResponse.status);
           Alert.alert('Erreur', 'Échec du téléchargement');
@@ -160,14 +215,17 @@ const PrestationScreen = () => {
       }
 
       const data = await response.json();
-      console.log(data)
+      //console.log(data)
       console.log('Prestation:', data.prestation);
-      console.log('images : ' , data.images)
+      //console.log('images : ' , data.images)
 
       // Stocker les prestations dans l'état
       setPrestation(data.prestation);
       setPrestationPhotos(data.images);
-      setRemuneration(data.remuneration);
+      
+      console.log('ici')
+      console.log(data.images)
+      setRemuneration(data.prestation.remuneration);
     } catch (error) {
       console.error('Une erreur est survenue lors de la récupération des prestations:', error);
     }
@@ -190,7 +248,7 @@ const PrestationScreen = () => {
     }
 
     const data = await response.json();
-    console.log(data);
+    //console.log(data);
 
   };
 
@@ -210,11 +268,8 @@ const PrestationScreen = () => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-
       const data = await response.json();
       console.log('experiences :', data.experiences);
-
-      // Stocker les prestations dans l'état
       setExperiences(data.experiences);
       
     } catch (error) {
@@ -288,7 +343,6 @@ const PrestationScreen = () => {
   const handleSaveDescription = async () => {
     setIsEditing(false);
     // Vous pouvez ajouter ici le code pour sauvegarder la nouvelle description, si nécessaire
-    console.log(123)
     try {
       console.log('debut save description')
       
@@ -317,7 +371,6 @@ const PrestationScreen = () => {
   const createExperience = async () => {
     setIsEditing(false);
     // Vous pouvez ajouter ici le code pour sauvegarder la nouvelle description, si nécessaire
-    console.log(123)
     try {
       console.log('debut create experience')
       
@@ -341,6 +394,16 @@ const PrestationScreen = () => {
     } catch (error) {
       console.error('Une erreur est survenue lors de la récupération des prestations:', error);
     }
+  };
+
+  const openImageModal = (imageUri : any) => {
+    setSelectedImage(imageUri);
+    setImageModalVisible(true);
+  };
+  
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setImageModalVisible(false);
   };
 
   const handleAddCertification = async () => {
@@ -572,8 +635,15 @@ const PrestationScreen = () => {
       {selectedTab === 'photos' && (
         <View style={styles.photoGrid}>
           
-          {prestationPhotos.map((photo : any, index) => (
-            <Image key={index} source={{ uri: photo.adress }} style={styles.photo} />
+          {prestationPhotos.map((photo : any, index : any) => (
+            <TouchableWithoutFeedback
+              key={index}
+              onLongPress={() => handleDeletePhoto(index)} // Déclenche une alerte sur pression longue
+              onPress={() => openImageModal(photo.adress)}
+            >
+              <Image source={{ uri: photo.adress }} style={styles.photo} />
+            </TouchableWithoutFeedback>
+            
           ))}
           <TouchableOpacity style={styles.addPhotoButton} onPress={addPrestationPhoto}>
             <FontAwesome name="plus" size={40} color="gray" />
@@ -727,6 +797,20 @@ const PrestationScreen = () => {
         )}
       </View>
       )}
+
+      <Modal
+        visible={isImageModalVisible}
+        transparent={true}
+        onRequestClose={closeImageModal}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity style={styles.modalBackground} onPress={closeImageModal}>
+            {selectedImage && (
+              <Image source={{ uri: selectedImage }} style={styles.fullScreenImage} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -767,10 +851,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 10,
   },
+
   modifyButtonText: {
     color: '#000',
     fontSize: 16,
   },
+  
   characterCount: {
     textAlign: 'right',
     fontSize: 12,
@@ -779,21 +865,21 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+    //justifyContent: 'space-around',
+    marginVertical: 20,
   },
   categoryButton: {
+    padding: 10,
+    borderRadius: 20,
+    margin : 5,
     backgroundColor: '#00cc66',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
   },
   activeCategoryButton: {
-    backgroundColor: '#FF6666',
+    backgroundColor: '#7ed957',
   },
   categoryButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   photoGrid: {
@@ -805,14 +891,12 @@ const styles = StyleSheet.create({
     width: '33.33%',
     height : '1',
     aspectRatio: 1,
-
-    
   },
   addPhotoButton: {
     width: '33.33%',
+    height : '1',
     aspectRatio: 1,
     backgroundColor: '#f5f5f5',
-    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1149,6 +1233,18 @@ const styles = StyleSheet.create({
   tarifPopupCloseButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  fullScreenImage: {
+    width: '90%', // Adapte l'image à l'écran
+    height: '90%',
+    resizeMode: 'contain',
   },
   
 });

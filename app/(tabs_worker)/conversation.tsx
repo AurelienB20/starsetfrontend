@@ -42,13 +42,13 @@ const ConversationScreen = () => {
     }
   };
 
-  const gotoChat = async (conversationId: string) => {
+  const gotoChat = async (conversationId: string, contactProfilePictureUrl : string, contactFirstname : string) => {
     // Logique pour aller au chat spécifique
     console.log('Navigating to chat with ID:', conversationId);
     const worker_id = await  getWorkerId()
     navigation.navigate({
       name: 'chat',
-      params: {conversation_id : conversationId , sender_id : worker_id , sender_type : 'worker'},
+      params: {conversation_id : conversationId , sender_id : worker_id , sender_type : 'worker', contact_profile_picture_url : contactProfilePictureUrl, contact_firstname : contactFirstname},
     } as never);
     // Vous pouvez ici utiliser une navigation ou une autre action
     // Par exemple, navigation.navigate('ChatScreen', { id: conversationId });
@@ -57,11 +57,11 @@ const ConversationScreen = () => {
   const renderItem = ({ item }: any) => (
     <TouchableOpacity 
       style={styles.messageContainer} 
-      onPress={() => gotoChat(item.id)} // Appel de la fonction avec l'ID de la conversation
+      onPress={() => gotoChat(item.id, item.profile_picture_url, item.firstname)} // Appel de la fonction avec l'ID de la conversation
     >
       <Image
         source={{
-          uri: 'https://img.20mn.fr/wb0GX0XqSd2N4Y3ItfLEGik/1444x920_squeezie-youtubeur-chanteur-et-desormais-auteur-de-bd',
+          uri: item.profile_picture_url,
         }}
         style={styles.profileImage}
       />

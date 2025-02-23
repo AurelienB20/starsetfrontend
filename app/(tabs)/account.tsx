@@ -1,15 +1,20 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Modal, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Modal, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'avoir installé cette bibliothèque
 import { saveMode } from '../chooseAccount';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FontAwesome } from '@expo/vector-icons';
+
+import config from '../../config.json';
 
 const AccountScreen = () => {
   const navigation = useNavigation();
   const [isVisible, setIsVisible] = useState(false); // Gérer l'affichage du rectangle pour le menu
   const [isModalVisible, setIsModalVisible] = useState(false); // Pour afficher le popup de déconnexion
+  const [historyModalVisible, setHistoryModalVisible ] = useState(false); 
   const [profilePicture, setProfilePicture] = useState<any>(null)
+  const [account, setAccount] = useState<any>(null)
 
   const changeToWorker = async () => {
     saveMode('worker');
@@ -23,19 +28,67 @@ const AccountScreen = () => {
     navigation.navigate('test' as never);
   };
 
+  const goToMistral = async () => {
+    navigation.navigate('mistral' as never);
+  };
+
   const goToCard = async () => {
     navigation.navigate('paymentMethod' as never);
+  };
+
+  const goToSelectFields = async () => {
+    navigation.navigate('selectFields' as never);
   };
 
   const goToProfilePicture = async () => {
     navigation.navigate('modifyAccount' as never);
   };
+
+  const goToMultiplePrestation = async () => {
+    navigation.navigate('multiplePrestation' as never);
+  };
+
+  const getAccountId = async () => {
+    try {
+      const account_id = await AsyncStorage.getItem('account_id');
+      console.log("account_id 123")
+      console.log(account_id)
+      if (account_id !== null) {
+        return account_id;
+      }
+    } catch (e) {
+      console.error('Erreur lors de la récupération du type de compte', e);
+    }
+  };
  
-  const getProfilePicture = async () => {
-    const profilePicture2 = await AsyncStorage.getItem('profile_picture');
-    console.log(profilePicture2)
-    setProfilePicture(profilePicture2)
-  }; 
+  const getProfile = async () => {
+    try {
+      // Récupérer l'ID du compte
+      const accountId = await getAccountId(); 
+  
+      const response = await fetch(`${config.backendUrl}/api/auth/get-account-by-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accountId }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      console.log('Account:', data.account);
+      console.log('ici')
+      console.log(data)
+      setAccount(data.account);
+  
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);
+      return null; // Retourne null en cas d'erreur
+    }
+  };
 
   const confirmLogout = async () => {
     // Logique pour déconnecter l'utilisateur
@@ -49,7 +102,7 @@ const AccountScreen = () => {
   };
 
   useEffect(() => {
-    getProfilePicture();
+    getProfile();
   }, []);
 
   useLayoutEffect(() => {
@@ -97,8 +150,8 @@ const AccountScreen = () => {
           <TouchableOpacity  onPress={goToProfilePicture}>
           <Image
             source={{ 
-              uri: profilePicture 
-                ? profilePicture 
+              uri: account?.profile_picture_url 
+                ? account?.profile_picture_url
                 : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png' 
             }} 
             style={styles.profilePicture}
@@ -106,8 +159,8 @@ const AccountScreen = () => {
           </TouchableOpacity>
           
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Viriya Chip</Text>
-            <Text style={styles.profileHandle}>@viriya77400</Text>
+            <Text style={styles.profileName}>{account?.firstname} {account?.lastname}</Text>
+            <Text style={styles.profileHandle}>{account?.pseudo}</Text>
           </View>
         </View>
         <View style={styles.rightHeader}>
@@ -115,6 +168,7 @@ const AccountScreen = () => {
         </View>
       </View>
 
+      <ScrollView showsVerticalScrollIndicator={false}>
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceLabel}>Mode paiement</Text>
         <TouchableOpacity style={styles.balanceCard} onPress={goToCard}>
@@ -141,8 +195,14 @@ const AccountScreen = () => {
       <TouchableOpacity style={styles.menuItem}>
         <Text style={styles.menuItemText}>À propos</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToTest}>
-        <Text style={styles.menuItemText}>Test</Text>
+      <TouchableOpacity style={styles.menuItem} onPress={goToSelectFields}>
+        <Text style={styles.menuItemText}>Select Fields</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.menuItem}>
+        <Text style={styles.menuItemText} onPress={() => setHistoryModalVisible(true)}>Historique</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.menuItem} onPress={goToMultiplePrestation}>
+        <Text style={styles.menuItemText}>PrestationMultipleTest</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={changeToWorker}>
         <Text style={styles.menuItemText}>Interface Worker</Text>
@@ -154,6 +214,7 @@ const AccountScreen = () => {
       </TouchableOpacity>
 
       {/* Modal de confirmation de déconnexion */}
+      </ScrollView>
       <Modal
         transparent={true}
         visible={isModalVisible}
@@ -174,6 +235,72 @@ const AccountScreen = () => {
           </View>
         </View>
       </Modal>
+      <Modal
+        transparent={true}
+        visible={historyModalVisible}
+        animationType="slide"
+        onRequestClose={() => setHistoryModalVisible(false)} // Ferme le modal avec le bouton "Retour"
+      >
+        <View style={styles.modalBackground}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>EN COURS</Text>
+            <Text style={styles.modalSubtitle}>Février</Text>
+
+            {/* Exemples de missions */}
+            <View style={styles.missionInProgressItemContainer}>
+            <TouchableOpacity style={styles.missionItem}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FontAwesome name="calendar" size={24} color="#00cc66" />
+                <View style={{ marginLeft: 10 }}>
+                  <Text style={styles.missionInProgressText}>Babysitting</Text>
+                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
+                </View>
+              </View>
+              <Text style={styles.missionPrice}>20,00€</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.missionItem}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FontAwesome name="calendar" size={24} color="#00cc66" />
+                <View style={{ marginLeft: 10 }}>
+                  <Text style={styles.missionInProgressText}>Ménage</Text>
+                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
+                </View>
+              </View>
+              <Text style={styles.missionPrice}>5,00€</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.missionItem}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <FontAwesome name="calendar" size={24} color="#00cc66" />
+                <View style={{ 
+                  marginLeft: 10,
+                  flexDirection : 'column',
+                  alignItems : 'flex-start',
+                  justifyContent : 'flex-start'
+
+                 }}>
+                  <Text style={styles.missionInProgressText}>Manucure</Text>
+                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
+                </View>
+              </View>
+              <Text style={styles.missionPrice}>35,00€</Text>
+            </TouchableOpacity>
+            </View>
+
+            {/* Bouton pour fermer le modal */}
+            <TouchableOpacity
+              style={styles.inProgressCloseButton}
+              onPress={() => setHistoryModalVisible(false)}
+            >
+              <Text style={styles.inProgressCloseButtonText}>FERMER</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        </View>
+      </Modal>
+
     </View>
   );
 };
@@ -183,6 +310,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 20,
+    marginTop : 40
   },
   profileHeader: {
     flexDirection: 'row',
@@ -322,6 +450,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent : 'center',
+    
   },
   modalText: {
     fontSize: 18,
@@ -342,6 +472,78 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: 'white',
     fontSize: 16,
+  },
+
+  missionItem: {
+    width : 250,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Équilibre entre les éléments
+    marginVertical: 10,
+    padding: 10,
+    borderBottomWidth: 1,
+    borderColor: '#e0e0e0', // Couleur claire pour la bordure
+    position: 'relative',
+    //backgroundColor : 'blue'
+  },
+
+  missionInProgressItemContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginVertical: 10,
+  },
+  missionInProgressText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  inProgressCloseButton: {
+    backgroundColor: '#FF3B30',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  inProgressCloseButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+
+  missionTime: {
+    fontSize: 14,
+    color: '#666', // Gris clair
+  },
+  missionPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#00cc66', // Vert
+    position: 'absolute',
+    right: 10, // Alignement à droite
+  },
+
+  modalSubtitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#00cc66',
+    textAlign: 'center',
+  },
+
+  modalContent: {
+    backgroundColor: 'white',
+    
+    
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent : 'center',
+    
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
   },
 });
 

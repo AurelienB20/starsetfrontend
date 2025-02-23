@@ -16,6 +16,7 @@ const PrestationViewScreen = () => {
   const [account, setAccount] = useState<any>(null);
   const [metiers, setMetiers] = useState<any>([]);
   const [prestation, setPrestation] = useState<any>({});
+  const [prestationImages, setPrestationImages] = useState<any>([]);
   const [experiences, setExperiences] = useState([])
   const [isDatePickerVisible, setDatePickerVisible] = useState(false); // State for the date picker modal
   const [selectedDate, setSelectedDate] = useState('');
@@ -26,7 +27,11 @@ const PrestationViewScreen = () => {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [isArrivalTimePickerVisible, setArrivalTimePickerVisible] = useState(false);
   const [isDepartureTimePickerVisible, setDepartureTimePickerVisible] = useState(false);
-  const [profilePictureUrl, setProfilePictureUrl] = useState('')
+  const [profilePictureUrl, setProfilePictureUrl] = useState('');
+  const [showAllBadges, setShowAllBadges] = useState(false);
+  const [isImageModalVisible, setImageModalVisible] = useState(false); // Contrôle de la visibilité du modal
+  const [selectedImage, setSelectedImage] = useState(null); // Image sélectionnée
+  const [selectedTag, setSelectedTag] = useState<number | null>(null);
   
   const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')); // Array from "00" to "23"
   const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')); // Array from "00" to "59"
@@ -36,6 +41,7 @@ const PrestationViewScreen = () => {
 
   const [departureHour, setDepartureHour] = useState('');
   const [departureMinute, setDepartureMinute] = useState('');
+  const [selectedMetier, setSelectedMetier] = useState(null);
 
   const photos = [
     { uri: 'https://www.asiakingtravel.fr/cuploads/files/voyage-malaisie-itineraire-budget-circuit-7-jours-1.jpg' },
@@ -51,17 +57,8 @@ const PrestationViewScreen = () => {
     { uri: 'https://abouttravel.ch/wp-content/uploads/2022/03/F22-110-06_Malaysia.jpg' },
   ];
 
-  const experienceData = [
-    {
-      title: 'Baby Sitting de Emma et Louis',
-      date: 'Le 21/09/2022',
-      description: 'Garde de deux enfants avec des besoins alimentaires spéciaux.',
-      images: [
-        { uri: 'https://images.pexels.com/photos/1104012/pexels-photo-1104012.jpeg' },
-        { uri: 'https://images.pexels.com/photos/167699/pexels-photo-167699.jpeg' }
-      ],
-    }
-  ];
+  console.log("url")
+  console.log(profilePictureUrl)
 
   const handleHourChange = (text : any, setHour : any) => {
     const value = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
@@ -153,8 +150,11 @@ const PrestationViewScreen = () => {
       // Stocker les prestations dans l'état
       setPrestation(data.prestation);
       setProfilePictureUrl(data.account.profile_picture_url)
+      console.log('ICI 123')
+      console.log(data.metiers)
       setMetiers(data.metiers)
       setAccount(data.account)
+      setPrestationImages(data.images)
       
       
     } catch (error) {
@@ -219,8 +219,9 @@ const PrestationViewScreen = () => {
   
   }
 
-  const goToOtherPrestation = async (prestation_id : any) => {
+  const goToOtherPrestation = async (prestation_id : any, metier : any) => {
     console.log("ca marche")
+    setSelectedTag(metier)
     navigation.navigate({
       name: 'prestationView',
       params: {id : prestation_id},
@@ -275,6 +276,16 @@ const PrestationViewScreen = () => {
       }
     }
     return markedDates;
+  };
+
+  const openImageModal = (imageUri : any) => {
+    setSelectedImage(imageUri);
+    setImageModalVisible(true);
+  };
+  
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setImageModalVisible(false);
   };
 
 
@@ -344,6 +355,7 @@ const PrestationViewScreen = () => {
   }
 
   return (
+    <View>
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Image
@@ -357,24 +369,24 @@ const PrestationViewScreen = () => {
       </View>
 
       <View style={styles.tagsContainer}>
-        {metiers.slice(0,3).map((item : any, index : any) => (
-          <TouchableOpacity 
-          key={index} 
-          style={styles.tag} 
-          onPress={() => goToOtherPrestation(item.id)}
-        >
-          
-          <Text style={styles.tagText}>{item.metier}</Text>
-        </TouchableOpacity>
-        ))}
-        <TouchableOpacity 
-          
-          style={styles.tag} 
-          
-        >
-          
-          <Text style={styles.tagText}>+</Text>
-        </TouchableOpacity>
+        <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.tagsScrollContainer}
+    >
+      {metiers.map((item : any, index: any) => (
+        <TouchableOpacity
+        key={index}
+        style={[styles.tag, selectedTag === item.metier && styles.selectedTag]}
+        onPress={() => goToOtherPrestation(item.id, item.metier)}
+      >
+        <Text style={[styles.tagText, selectedTag === item.metier && styles.selectedTagText]}>
+          {item.metier.includes(' ') ? `${item.metier.split(' ')[0]}...` : item.metier}
+        </Text>
+      </TouchableOpacity>
+      ))}
+    </ScrollView>
+    
       </View>
 
       {/* Section des statistiques */}
@@ -424,10 +436,14 @@ const PrestationViewScreen = () => {
       {/* Contenu des onglets */}
       {selectedTab === 'photos' && (
         <View style={styles.photosContainer}>
-          {photos.map((photo, index) => (
-            <Image key={index} source={{ uri: photo.uri }} style={styles.photo} />
+          {prestationImages.map((photo : any, index : any) => (
+            <TouchableOpacity key={index} onPress={() => openImageModal(photo.adress)} style={styles.photoButton}>
+              <Image source={{ uri: photo.adress }} style={styles.photo} />
+            </TouchableOpacity>
           ))}
+          
         </View>
+        
       )}
 
       {selectedTab === 'experiences' && (
@@ -472,12 +488,7 @@ const PrestationViewScreen = () => {
         <View style={styles.diagonal2} />
       </View>
 
-      {/* Ajouter au panier */}
-      <View style={styles.addButtoncontainer}>
-        <TouchableOpacity style={styles.addButton} onPress={toggleCalendar}>
-          <Text style={styles.addButtonText}>Ajouter au panier</Text>
-        </TouchableOpacity>
-      </View>
+      
 
       {/* Date Picker Modal */}
       <Modal
@@ -600,12 +611,29 @@ const PrestationViewScreen = () => {
         </View>
       </Modal>
 
-
-      
-
-      {/* Selected Date Display */}
+      <Modal
+        visible={isImageModalVisible}
+        transparent={true}
+        onRequestClose={closeImageModal}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity style={styles.modalBackground} onPress={closeImageModal}>
+            {selectedImage && (
+              <Image source={{ uri: selectedImage }} style={styles.fullScreenImage} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </Modal>
       
     </ScrollView>
+
+    {/* Ajouter au panier */}
+    <View style={styles.addButtonFixedContainer}>
+        <TouchableOpacity style={styles.addButton} onPress={toggleCalendar}>
+          <Text style={styles.addButtonText}>Ajouter au panier</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
@@ -638,23 +666,33 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    marginVertical: 10,
+    marginTop: 10,
     paddingHorizontal: 10,
   },
+  tagsScrollContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
   tag: {
-    backgroundColor: '#f4c01e',
-    //backgroundColor: '#ffde59',
-    padding: 10,
-    borderRadius: 15,
-    margin: 5,
+    paddingHorizontal : 15,
+    paddingVertical: 12,
+    //backgroundColor: '#f0f0f0', // Couleur par défaut pour les badges
+  },
+  selectedTag: {
+    backgroundColor: '#dcdcdc', // Fond grisé
+    borderColor: '#999', // Bordure visible
   },
   tagText: {
-    fontSize: 8,
-    color: '#000',
+    fontSize: 14,
+    color: '#555',
+    fontWeight: 'bold',
   },
+  selectedTagText: {
+    color: '#000', // Texte plus foncé pour le badge sélectionné
+    fontWeight: 'bold',
+  },
+
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -675,12 +713,15 @@ const styles = StyleSheet.create({
     textAlign : 'center'
   },
   descriptionContainer: {
-    backgroundColor: '#f4f4f4',
-    
+    //backgroundColor: '#f4f4f4',
+    //margin : 20,
     textAlign : 'center',
-    marginHorizontal: 10,
+    //marginHorizontal: 10,
     borderRadius: 5,
     padding: 20,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#e0e0e0', // Couleur claire pour la bordure
   },
   descriptionContainerText: {
     fontSize: 12,
@@ -703,18 +744,27 @@ const styles = StyleSheet.create({
   tabButtonText: {
     color: '#FFF',
     fontSize: 12,
+    fontWeight : 'bold'
   },
   photosContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
+    alignItems : 'flex-start'
+   
     
   },
   photo: {
+    width: '100%',
+    aspectRatio: 1,
+    
+  },
+  photoButton: {
     width: '33.33%',
     aspectRatio: 1,
     
   },
+
   experienceContainer: {
     padding: 10,
   },
@@ -772,13 +822,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 120,
     backgroundColor: 'green',
     height: 100,
     marginHorizontal: 10,
     paddingHorizontal: 30,
     position: 'relative',
     overflow: 'hidden',
+    
   },
   diagonal: {
     position: 'absolute',
@@ -815,7 +866,18 @@ const styles = StyleSheet.create({
   addButtoncontainer: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 20,
+    
+  },
+  
+  addButtonFixedContainer: {
+    position: 'absolute', // Position fixe
+    bottom: 0, // Positionné à 10px du bas de l'écran
+    left: 0,
+    right: 0,
+    alignItems: 'center', // Centré horizontalement
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Fond semi-transparent (optionnel)
+    paddingVertical: 10, // Espacement autour du bouton
+    zIndex: 1000, // Toujours au-dessus du contenu
   },
   addButton: {
     backgroundColor: 'green',
@@ -1015,6 +1077,26 @@ const styles = StyleSheet.create({
     left: 10,
     padding: 5,
   },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)', // Fond semi-transparent
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  fullScreenImage: {
+    width: '90%', // Adapte l'image à l'écran
+    height: '90%',
+    resizeMode: 'contain',
+  },
+
+  
 });
 
 export default PrestationViewScreen;

@@ -8,6 +8,8 @@ import CroissanceScreen from './croissance';
 import { Entypo } from '@expo/vector-icons';
 import AddJobScreen from './addJob';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'react-native';
+
 
 const Tab = createBottomTabNavigator();
 
@@ -30,7 +32,13 @@ export default function TabNavigator() {
         component={CroissanceScreen}
         options={{
           title: '',
-          tabBarIcon: ({ color }) => <TabBarIconEntypo name="bar-graph" color={color} />
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require('../../assets/images/croissance_icone.png')}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
+          )
         }}
       />
       <Tab.Screen
@@ -38,7 +46,13 @@ export default function TabNavigator() {
         component={JobsScreen}
         options={{
           title: '',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <Image
+              source={require('../../assets/images/tableau.png')}
+              style={{ width: 28, height: 28, tintColor: color }}
+              resizeMode="contain"
+            />
+          )
         }}
       />
       <Tab.Screen

@@ -17,9 +17,11 @@ const SummaryScreen = () => {
   const navigation = useNavigation();
   
   const { startDate, endDate, arrivalTime, departureTime, prestation, profilePictureUrl } = route.params;
-
+  console.log("route.params")
+  console.log(route.params)
   console.log(arrivalTime)
   console.log(departureTime)
+  
 
   let formattedStartDate = 'N/A';
   let formattedEndDate = 'N/A';
@@ -43,7 +45,7 @@ const SummaryScreen = () => {
     
     navigation.navigate({
       name: 'payment',
-      //params: { startDate, endDate },
+      params: { startDate :startDate,endDate : endDate,  arrivalTime : arrivalTime, departureTime : departureTime, prestation :prestation, profilePictureUrl : profilePictureUrl },
     } as never);
   };
 

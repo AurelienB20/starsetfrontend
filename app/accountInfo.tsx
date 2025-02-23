@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, GestureResponderEvent , StyleSheet} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import config from '../config.json';
 
 const AccountInfoScreen = () => {
@@ -10,65 +11,49 @@ const AccountInfoScreen = () => {
   const [birthDate, setBirthDate] = useState(new Date());
   const [address, setAddress] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [show, setShow] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const navigation = useNavigation();
-  console.log(1111)
+  const route = useRoute() as any;
+  const { email, password , preferredFields} = route.params || {};
 
-  const handleFirstNameChange = (text: React.SetStateAction<string>) => setFirstName(text);
-  const handleLastNameChange = (text: React.SetStateAction<string>) => setLastName(text);
-  const handleAddressChange = (text: React.SetStateAction<string>) => setAddress(text);
-  const handlePhoneNumberChange = (text: React.SetStateAction<string>) => setPhoneNumber(text);
-  
-
-  const onChange = (e: any, selectedDate: any) => {
-    const currentDate = selectedDate || birthDate;
-    setShow(false);
-    setBirthDate(currentDate);
-  };
-
-  
+  const handleFirstNameChange = (text : any) => setFirstName(text);
+  const handleLastNameChange = (text : any) => setLastName(text);
+  const handleAddressChange = (text : any) => setAddress(text);
+  const handlePhoneNumberChange = (text : any) => setPhoneNumber(text);
 
   const getAccountId = async () => {
     try {
       const accountId = await AsyncStorage.getItem('account_id');
       if (accountId !== null) {
-        // Rediriger l'utilisateur en fonction du type de compte
-        return accountId
+        return accountId;
       }
     } catch (e) {
-      // gérer les erreurs de récupération ici
       console.error('Erreur lors de la récupération du type de compte', e);
     }
   };
 
   const handleSubmit = async () => {
-    console.log(1)
-    const accountId = await getAccountId()
-    console.log('accountId')
-    console.log(accountId)
-    
     try {
-      
-      const response = await fetch(`${config.backendUrl}/api/auth/update-account`, {
+      const response = await fetch(`${config.backendUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          email,
+          password,
+          preferredFields,
           firstName,
           lastName,
-          birthDate,
+          birthDate: birthDate.toISOString().split('T')[0],
           address,
           phoneNumber,
-          accountId,
-         }),
+        }),
       });
       const data = await response.json();
-      console.log(data)
-      saveData(data.account)
+      saveData(data.account);
       if (data.success) {
-        navigation.navigate('chooseAccount' as never); // Remplacez 'NextScreen' par le nom de votre prochaine écran
+        navigation.navigate('chooseAccount' as never);
       } else {
         alert(data.message);
       }
@@ -80,25 +65,30 @@ const AccountInfoScreen = () => {
 
   const saveData = async (account: any) => {
     try {
-      await AsyncStorage.setItem('firstname', account['firstname']);
-      await AsyncStorage.setItem('lastname', account['lastname']);
-      
+      await AsyncStorage.setItem('account_id', account['id']);
+      await AsyncStorage.setItem('worker_id', account['worker']);
     } catch (e) {
-      // gérer les erreurs de stockage ici
       console.error('Erreur lors de la sauvegarde du type de compte', e);
     }
   };
 
+  const toggleDatePicker = () => setShowDatePicker(!showDatePicker);
 
+  const onChangeDate = (event : any, selectedDate : any) => {
+    const currentDate = selectedDate || birthDate;
+    setShowDatePicker(false);
+    setBirthDate(currentDate);
+  };
 
-  const showDatepicker = () => setShow(true);
+  const changeYearBy = (years: any) => {
+    const newDate = new Date(birthDate);
+    newDate.setFullYear(newDate.getFullYear() + years);
+    setBirthDate(newDate);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.enter}>
-        Nouveau worker
-      </Text>
-
+      <Text style={styles.enter}>Nouveau worker</Text>
       <Text style={styles.subtitle}>
         Parlez-nous de vous, nous souhaitons vraiment vous connaître !
       </Text>
@@ -119,7 +109,7 @@ const AccountInfoScreen = () => {
         value={lastName}
       />
 
-      <TouchableOpacity onPress={showDatepicker} style={styles.dateDiv}>
+      <TouchableOpacity onPress={toggleDatePicker} style={styles.dateDiv}>
         <TextInput
           style={styles.birth}
           placeholder="Date de naissance"
@@ -128,6 +118,15 @@ const AccountInfoScreen = () => {
           editable={false}
         />
       </TouchableOpacity>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={birthDate}
+          mode="date"
+          display="spinner"
+          onChange={onChangeDate}
+        />
+      )}
 
       
 
@@ -161,7 +160,7 @@ const AccountInfoScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container : {
+  container: {
     width: '100%',
     height: '100%',
     backgroundColor: '#FFFFFF',
@@ -170,108 +169,106 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   enter: {
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: 40,
     marginTop: 0,
-    marginHorizontal : 20,
-    color : 'black'
-},
-
+    marginHorizontal: 20,
+    color: 'black',
+  },
   subtitle: {
     marginTop: 10,
     fontSize: 13,
-    textAlign: "center",
-    color : 'black',
-    marginBottom : 50,
+    textAlign: 'center',
+    color: 'black',
+    marginBottom: 50,
   },
-
   nameInput: {
-    fontFamily: "Outfit",
-    width: "70%",
-    maxWidth : 250,
-    backgroundColor: "white",
+    fontFamily: 'Outfit',
+    width: '70%',
+    maxWidth: 250,
+    backgroundColor: 'white',
     borderRadius: 8,
     borderWidth: 2,
     borderColor: 'black',
-    color: "black",
-    textAlign: "center",
+    color: 'black',
+    textAlign: 'center',
     fontSize: 15,
     padding: 10,
     marginBottom: 10,
-    marginHorizontal : 10,
-    paddingHorizontal : 30,
+    marginHorizontal: 10,
+    paddingHorizontal: 30,
   },
-
-  
   birth: {
-    fontFamily: "Outfit",
-    width: "70%",
-    maxWidth : 250,
-    backgroundColor: "white",
+    fontFamily: 'Outfit',
+    width: '70%',
+    maxWidth: 250,
+    backgroundColor: 'white',
     borderRadius: 20,
     borderWidth: 2,
     borderColor: 'black',
-    color: "black",
-    textAlign: "center",
+    color: 'black',
+    textAlign: 'center',
     fontSize: 15,
     padding: 8,
     marginTop: 10,
     marginBottom: 20,
   },
-
   place: {
-    fontFamily: "Outfit",
-    width: "70%",
-    maxWidth : 350,
-    backgroundColor: "white",
+    fontFamily: 'Outfit',
+    width: '70%',
+    maxWidth: 350,
+    backgroundColor: 'white',
     borderRadius: 20,
     borderWidth: 2,
     borderColor: 'black',
-    color: "black",
-    textAlign: "center",
+    color: 'black',
+    textAlign: 'center',
     fontSize: 15,
     padding: 8,
     marginTop: 10,
   },
-
-  
   number: {
-    fontFamily: "Outfit",
-    width: "70%",
-    maxWidth : 350,
-    backgroundColor: "white",
+    fontFamily: 'Outfit',
+    width: '70%',
+    maxWidth: 350,
+    backgroundColor: 'white',
     borderRadius: 20,
     borderWidth: 2,
     borderColor: 'black',
-    color: "black",
-    textAlign: "center",
+    color: 'black',
+    textAlign: 'center',
     fontSize: 15,
     padding: 8,
     marginTop: 10,
     marginBottom: 20,
   },
-  
-  submitbutton : {   
+  submitbutton: {
     maxWidth: 300,
-    width: "60%",
+    width: '60%',
     height: 50,
     backgroundColor: '#70FF70',
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 10,
-    borderRadius : 25,
-    marginHorizontal : 10,
+    borderRadius: 25,
+    marginHorizontal: 10,
   },
-
-  dateDiv : {
-    alignItems: 'center'
-  }
-
+  dateDiv: {
+    alignItems: 'center',
+  },
+  quickNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '70%',
+    marginBottom: 20,
+  },
+  quickNavText: {
+    fontSize: 16,
+    color: 'blue',
+    textDecorationLine: 'underline',
+  },
 });
 
 export default AccountInfoScreen;
-
-

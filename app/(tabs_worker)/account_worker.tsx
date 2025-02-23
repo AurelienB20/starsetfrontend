@@ -3,9 +3,12 @@ import { View, Text, TextInput, TouchableOpacity, GestureResponderEvent, Image }
 import { useNavigation } from '@react-navigation/native';
 import { saveMode } from '../chooseAccount';
 import config from '../../config.json';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AccountWorkerScreen = () => {
 
+  const [account, setAccount] = useState<any>(null)
   const navigation = useNavigation();
 
   const changeToUser = async () => {
@@ -20,17 +23,66 @@ const AccountWorkerScreen = () => {
     //  screen: 'account',
     //} as never);
   }
+
+  const getAccountId = async () => {
+    try {
+      const account_id = await AsyncStorage.getItem('account_id');
+      if (account_id !== null) {
+        return account_id;
+      }
+    } catch (e) {
+      console.error('Erreur lors de la récupération du type de compte', e);
+    }
+  };
+
+
+  const getProfile = async () => {
+    try {
+      // Récupérer l'ID du compte
+      const accountId = await getAccountId(); 
+  
+      const response = await fetch(`${config.backendUrl}/api/auth/get-account-by-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ accountId }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      console.log('Account:', data.account);
+      console.log('ici')
+      console.log(data)
+      setAccount(data.account);
+  
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);
+      return null; // Retourne null en cas d'erreur
+    }
+  };
+
+  useEffect(() => {
+    getProfile();
+  }, []);
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.profileHeader}>
           <Image
-            source={{ uri: 'https://img.20mn.fr/wb0GX0XqSd2N4Y3ItfLEGik/1444x920_squeezie-youtubeur-chanteur-et-desormais-auteur-de-bd' }} // Replace with actual URL
+            source={{ uri: account?.profile_picture_url 
+              ? account?.profile_picture_url
+              : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png'  }} // Replace with actual URL
             style={styles.profilePicture}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Viriya Chip</Text>
-            <Text style={styles.profileHandle}>@viriya77400</Text>
+            <Text style={styles.profileName}>{account?.firstname} {account?.lastname}</Text>
+            <Text style={styles.profileHandle}>{account?.pseudo}</Text>
           </View>
           
         </View>
@@ -41,12 +93,12 @@ const AccountWorkerScreen = () => {
       </View>
 
       <View style={styles.balanceContainer}>
-        <Text style={styles.balanceLabel}>Mode paiement</Text>
+        <Text style={styles.balanceLabel}>Tirelire</Text>
         <View style={styles.balanceCard}>
           <Text style={styles.balanceAmount}>0,00 €</Text>
-          <Image
-            source={{ uri: 'https://example.com/wallet-icon.png' }} // Replace with actual URL
-            style={styles.walletIcon}
+          <Image 
+            source={require('../../assets/images/tirelire.png')} // Assure-toi d'avoir une image ici
+            style={styles.tirelire} 
           />
         </View>
       </View>
@@ -115,14 +167,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFEB3B',
+    backgroundColor: '#7ED957',
     padding: 15,
     borderRadius: 10,
+    
   },
   balanceAmount: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#fff',
   },
   walletIcon: {
     width: 40,
@@ -173,7 +226,13 @@ const styles = StyleSheet.create({
     justifyContent : 'space-between',
     marginBottom: 20,
     
-  }
+  },
+
+  tirelire: {
+    width: 40,  // Taille de l’icône tirelire
+    height: 40,
+    marginRight: 10, // Espacement avec le montant
+  },
 
 });
 

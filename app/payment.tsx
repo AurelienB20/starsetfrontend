@@ -1,23 +1,90 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ImageBackground, GestureResponderEvent } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-
-import { StyleSheet, TextStyle, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { StyleSheet } from 'react-native';
 import config from '../config.json';
-//import axios from '../api/axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const PaymentScreen = () => {
+  const route = useRoute() as any;
+  const navigation = useNavigation();
+  
+  // Récupération des paramètres passés
+  const { 
+    startDate, 
+    endDate, 
+    arrivalTime, 
+    departureTime, 
+    prestation, 
+    profilePictureUrl,
+  } = route.params;
+
+  const getAccountId = async () => {
+    console.log(" debut accoount id")
+    try {
+      const account_id = await AsyncStorage.getItem('account_id');
+      console.log("account_id 12")
+      console.log(account_id)
+      if (account_id !== null) {
+        return account_id;
+      }
+    } catch (e) {
+      console.error('Erreur lors de la récupération du type de compte', e);
+    }
+  };
+
+  // Fonction pour gérer le paiement
+  const handlePayment = async () => {
+    
+    let user_id =  await getAccountId()
+    console.log("user_id")
+    console.log(user_id)
+    try {
+      const response = await fetch(`${config.backendUrl}/api/mission/create-planned-prestation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          worker_id : prestation.worker_id,
+          user_id : user_id,
+          prestation_id : prestation.id,
+          start_date: startDate,
+          end_date: endDate,
+          type_of_remuneration : 'hours',
+          remuneration : prestation.remuneration,
+        }),
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (data.success) {
+        Alert.alert("Succès", "Prestation planifiée avec succès !");
+        navigation.navigate({
+          name: '(tabs)',
+          params: { screen: 'home' },
+        } as never);
+      } else {
+        Alert.alert("Erreur", "Une erreur est survenue lors du paiement.");
+      }
+    } catch (error) {
+      console.error('Erreur lors de la requête:', error);
+      Alert.alert("Erreur", "Impossible de valider le paiement. Vérifiez votre connexion.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.headerText}>PAIEMENT</Text>
       <View style={styles.profileContainer}>
         <Image
-          source={{ uri: 'https://example.com/profile-picture.jpg' }} // Replace with the actual profile picture URL
+          source={{ uri: profilePictureUrl || 'https://example.com/profile-picture.jpg' }} 
           style={styles.profilePicture}
         />
       </View>
-      
+
       <Text style={styles.sectionHeader}>Informations générales</Text>
       <View style={styles.infoContainer}>
         <View style={styles.tag}>
@@ -26,13 +93,10 @@ const PaymentScreen = () => {
         <View style={styles.tag}>
           <Text style={styles.tagText}>🐶 Petsitting</Text>
         </View>
-        <Text style={styles.addressText}>
-          📍 19 avenue Charles de Gaulle, 77400
-        </Text>
-        <Text style={styles.noteText}>
-          ✏️ “Pouvez-vous préparez son dîner aux alentours de 19h30 svp. Merci 😊”
-        </Text>
+        <Text style={styles.addressText}>📍 19 avenue Charles de Gaulle, 77400</Text>
+        <Text style={styles.noteText}>✏️ “Pouvez-vous préparer son dîner aux alentours de 19h30 svp. Merci 😊”</Text>
       </View>
+
       <Text style={styles.sectionHeader}>Mode de paiement</Text>
       <View style={styles.paymentContainer}>
         <Text style={styles.paymentText}>Total achat</Text>
@@ -46,7 +110,8 @@ const PaymentScreen = () => {
         <Text style={styles.paymentText}>Frais de déplacement</Text>
         <Text style={styles.paymentAmount}>1,30€</Text>
       </View>
-      <TouchableOpacity style={styles.button}>
+
+      <TouchableOpacity style={styles.button} onPress={handlePayment}>
         <Text style={styles.buttonText}>Valider le paiement</Text>
       </TouchableOpacity>
     </View>
@@ -75,19 +140,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-  },
-  stepContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '60%',
-    marginBottom: 20,
-  },
-  step: {
-    alignItems: 'center',
-  },
-  stepText: {
-    fontSize: 20,
-    color: '#00FF00',
   },
   sectionHeader: {
     fontSize: 18,
@@ -149,3 +201,5 @@ const styles = StyleSheet.create({
 });
 
 export default PaymentScreen;
+
+

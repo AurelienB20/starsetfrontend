@@ -40,13 +40,13 @@ const ConversationScreen = () => {
     }
   };
 
-  const gotoChat = async (conversationId: string) => {
+  const gotoChat = async (conversationId: string, contactProfilePictureUrl : string, contactFirstname : string) => {
     // Logique pour aller au chat spécifique
     console.log('Navigating to chat with ID:', conversationId);
     const worker_id = await  getAccountId()
     navigation.navigate({
       name: 'chat',
-      params: {conversation_id : conversationId , sender_id : worker_id , sender_type : 'worker'},
+      params: {conversation_id : conversationId , sender_id : worker_id , sender_type : 'worker', contact_profile_picture_url : contactProfilePictureUrl, contact_firstname : contactFirstname},
     } as never);
     // Vous pouvez ici utiliser une navigation ou une autre action
     // Par exemple, navigation.navigate('ChatScreen', { id: conversationId });
@@ -55,11 +55,11 @@ const ConversationScreen = () => {
   const renderItem = ({ item }: any) => (
     <TouchableOpacity 
       style={styles.messageContainer} 
-      onPress={() => gotoChat(item.id)} // Appel de la fonction avec l'ID de la conversation
+      onPress={() => gotoChat(item.id, item.profile_picture_url, item.firstname)} // Appel de la fonction avec l'ID de la conversation
     >
       <Image
         source={{
-          uri: 'https://img.20mn.fr/wb0GX0XqSd2N4Y3ItfLEGik/1444x920_squeezie-youtubeur-chanteur-et-desormais-auteur-de-bd',
+          uri: item.profile_picture_url,
         }}
         style={styles.profileImage}
       />
@@ -74,6 +74,7 @@ const ConversationScreen = () => {
 
   const getAllConversation = async () => {
     try {
+      console.log()
       const worker_id = await getAccountId();
       const response = await fetch(`${config.backendUrl}/api/conversation/get-all-worker-conversation`, {
         method: 'POST',
@@ -82,12 +83,13 @@ const ConversationScreen = () => {
         },
         body: JSON.stringify({ worker_id }),
       });
-
+      console.log(response)
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
 
       const data = await response.json();
+      console.log(2)
       console.log('Conversations:', data.conversations);
 
       // Stocker les conversations dans l'état
@@ -145,7 +147,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
+    marginTop : 40
   },
+
   searchBar: {
     height: 40,
     backgroundColor: '#F0F0F0',
@@ -153,38 +157,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginVertical: 20,
   },
+
   messageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
   },
+
   profileImage: {
     width: 50,
     height: 50,
     borderRadius: 25,
   },
+
   messageContent: {
     flex: 1,
     marginLeft: 10,
   },
+
   name: {
     fontSize: 16,
     fontWeight: 'bold',
   },
+
   message: {
     fontSize: 14,
     color: '#666',
   },
+
   time: {
     fontSize: 12,
     color: '#666',
   },
+
   loadingOverlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // Légère opacité pour ne pas bloquer l'écran
   },
+
   loadingContainer: {
     width: 120,
     height: 120,
@@ -193,6 +205,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   loadingText: {
     marginTop: 10,
     fontSize: 14,

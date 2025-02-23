@@ -36,6 +36,21 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "296ca04b-b57c-49e4-b4cc-ea5b232de839"
+      }
+    },
+    "owner": "starset77",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/296ca04b-b57c-49e4-b4cc-ea5b232de839"
     }
   }
 }

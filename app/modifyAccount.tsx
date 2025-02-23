@@ -1,16 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Modal,
-} from 'react-native';
+import {View,Text,TextInput,TouchableOpacity,Image,ScrollView,StyleSheet,Modal} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config.json';
+import { useNavigation } from '@react-navigation/native';
 
 const ModifyAccountScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -30,6 +22,7 @@ const ModifyAccountScreen = () => {
   const [profilePictureUrl, setProfilePictureUrl] = useState('');
   const [pseudo, setPseudo] = useState('');
   const [descriptionPopup, setDescriptionPopup] = useState('');
+  const navigation = useNavigation();
 
   const handleDescriptionSave = async () => {
     setDescription(descriptionPopup);
@@ -91,6 +84,10 @@ const ModifyAccountScreen = () => {
     }
   };
 
+  const gotoProfilePhotoScreen = async () => {
+    navigation.navigate('profilePhotoScreen' as never)
+  };
+
   const handleSave = async () => {
     try {
       const accountId = await AsyncStorage.getItem('account_id');
@@ -135,13 +132,13 @@ const ModifyAccountScreen = () => {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
-      <View style={styles.profilePictureContainer}>
+      <TouchableOpacity style={styles.profilePictureContainer} onPress={gotoProfilePhotoScreen}>
         <Image
           source={{ uri: profilePictureUrl }}
           style={styles.profilePicture}
         />
         <Text style={styles.editPhotoText}>Modifier la photo de profil</Text>
-      </View>
+      </TouchableOpacity>
 
       <View style={styles.descriptionContainer}>
         <Text style={styles.descriptionLabel}>Description générale</Text>
@@ -231,6 +228,7 @@ const styles = StyleSheet.create({
     
     
     backgroundColor: '#FFFFFF',
+    
   },
   profilePictureContainer: {
     alignItems: 'center',
