@@ -9,7 +9,7 @@ import PaymentMethodScreen from './paymentMethod';
 import ModifyAccountScreen from './modifyAccount';
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Redirect } from 'expo-router';
-
+import { UserProvider } from '@/context/userContext';
 
 function RootLayoutNav() {
   
