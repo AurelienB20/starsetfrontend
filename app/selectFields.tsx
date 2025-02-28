@@ -60,7 +60,7 @@ const InterestsScreen = () => {
     
 
     navigation.navigate({
-        name: 'accountInfo',
+        name: 'getLocation',
         params: {email : email, password : password, preferredFields : preferredFields},
       } as never);
 };

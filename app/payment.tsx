@@ -54,6 +54,8 @@ const PaymentScreen = () => {
           end_date: endDate,
           type_of_remuneration : 'hours',
           remuneration : prestation.remuneration,
+          start_time : arrivalTime,
+          end_time : departureTime,
         }),
       });
 

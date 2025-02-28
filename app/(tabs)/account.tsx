@@ -15,6 +15,10 @@ const AccountScreen = () => {
   const [historyModalVisible, setHistoryModalVisible ] = useState(false); 
   const [profilePicture, setProfilePicture] = useState<any>(null)
   const [account, setAccount] = useState<any>(null)
+  const [plannedPrestations, setPlannedPrestations] = useState<any[]>([]);
+  const [workerPlannedPrestations, setWorkerPlannedPrestations] = useState<any[]>([]);
+  const [isWorkerRequestModalVisible, setWorkerRequestModalVisible] = useState(false); // Modal qui affiche les missions planifiées du worker
+
 
   const changeToWorker = async () => {
     saveMode('worker');
@@ -44,8 +48,8 @@ const AccountScreen = () => {
     navigation.navigate('modifyAccount' as never);
   };
 
-  const goToMultiplePrestation = async () => {
-    navigation.navigate('multiplePrestation' as never);
+  const goToGetLocation = async () => {
+    navigation.navigate('getLocation' as never);
   };
 
   const getAccountId = async () => {
@@ -90,6 +94,33 @@ const AccountScreen = () => {
     }
   };
 
+  const getUserPlannedPrestation = async () => {
+    try {
+      // Récupérer l'ID du compte
+      const accountId = await getAccountId(); 
+  
+      const response = await fetch(`${config.backendUrl}/api/mission/get-user-planned-prestation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id : accountId }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      console.log('Planned Prestation:', data.plannedPrestations);
+      setPlannedPrestations(data.plannedPrestations);
+  
+    } catch (error) {
+      console.error('Error fetching profile picture:', error);
+      return null; // Retourne null en cas d'erreur
+    }
+  };
+
   const confirmLogout = async () => {
     // Logique pour déconnecter l'utilisateur
     // Ici, vous pouvez effacer les informations d'authentification, par exemple.
@@ -100,6 +131,14 @@ const AccountScreen = () => {
     navigation.navigate('connexion' as never);
     setIsModalVisible(false);
   };
+
+  const openHistoryModal = async () => {
+    await getUserPlannedPrestation(); // Récupère les prestations planifiées
+    setHistoryModalVisible(true); // Affiche le modal après récupération des données
+  };
+
+  
+  
 
   useEffect(() => {
     getProfile();
@@ -199,10 +238,10 @@ const AccountScreen = () => {
         <Text style={styles.menuItemText}>Select Fields</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText} onPress={() => setHistoryModalVisible(true)}>Historique</Text>
+        <Text style={styles.menuItemText} onPress={openHistoryModal}>Historique</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToMultiplePrestation}>
-        <Text style={styles.menuItemText}>PrestationMultipleTest</Text>
+      <TouchableOpacity style={styles.menuItem} onPress={goToGetLocation}>
+        <Text style={styles.menuItemText}>getLocation</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={changeToWorker}>
         <Text style={styles.menuItemText}>Interface Worker</Text>
@@ -239,67 +278,70 @@ const AccountScreen = () => {
         transparent={true}
         visible={historyModalVisible}
         animationType="slide"
-        onRequestClose={() => setHistoryModalVisible(false)} // Ferme le modal avec le bouton "Retour"
+        onRequestClose={() => setHistoryModalVisible(false)}
       >
         <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>EN COURS</Text>
-            <Text style={styles.modalSubtitle}>Février</Text>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>EN COURS</Text>
+              <Text style={styles.modalSubtitle}>Février</Text>
 
-            {/* Exemples de missions */}
-            <View style={styles.missionInProgressItemContainer}>
-            <TouchableOpacity style={styles.missionItem}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <FontAwesome name="calendar" size={24} color="#00cc66" />
-                <View style={{ marginLeft: 10 }}>
-                  <Text style={styles.missionInProgressText}>Babysitting</Text>
-                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
-                </View>
+              {/* Liste des prestations récupérées */}
+              <View style={styles.missionInProgressItemContainer}>
+                {plannedPrestations.length > 0 ? (
+                  plannedPrestations.map((prestation, index) => (
+                    <TouchableOpacity key={index} style={styles.missionItem}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={styles.dayContainer}>
+                          <Text style={styles.dayText}>{new Date(prestation.start_date).getUTCDate()}</Text>
+                        </View>
+                        
+                        <View style={{ marginLeft: 10 }}>
+                          <Text style={styles.missionInProgressText}>{prestation.metier}</Text> {/* Nom par défaut */}
+                          <Text style={styles.missionTime}>
+                            {prestation.start_time} → {prestation.end_time}
+                          </Text>
+
+                          {/* Label de statut dynamique */}
+                          {prestation.status === "waiting" && (
+                            <View style={[styles.statusBadge, { backgroundColor: 'orange' }]}>
+                              <Text style={styles.statusText}>Waiting</Text>
+                            </View>
+                          )}
+                          {prestation.status === "inProgress" && (
+                            <View style={[styles.statusBadge, { backgroundColor: '#00cc66' }]}>
+                              <Text style={styles.statusText}>In Progress</Text>
+                            </View>
+                          )}
+                          {prestation.status === "rejected" && (
+                            <View style={[styles.statusBadge, { backgroundColor: 'red' }]}>
+                              <Text style={styles.statusText}>Rejected</Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                      <Text style={styles.missionPrice}>{prestation.remuneration}€</Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <Text style={{ textAlign: 'center', marginTop: 10, color: '#666' }}>
+                    Aucune prestation en cours.
+                  </Text>
+                )}
               </View>
-              <Text style={styles.missionPrice}>20,00€</Text>
-            </TouchableOpacity>
 
-            <TouchableOpacity style={styles.missionItem}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <FontAwesome name="calendar" size={24} color="#00cc66" />
-                <View style={{ marginLeft: 10 }}>
-                  <Text style={styles.missionInProgressText}>Ménage</Text>
-                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
-                </View>
-              </View>
-              <Text style={styles.missionPrice}>5,00€</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.missionItem}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <FontAwesome name="calendar" size={24} color="#00cc66" />
-                <View style={{ 
-                  marginLeft: 10,
-                  flexDirection : 'column',
-                  alignItems : 'flex-start',
-                  justifyContent : 'flex-start'
-
-                 }}>
-                  <Text style={styles.missionInProgressText}>Manucure</Text>
-                  <Text style={styles.missionTime}>12h00 → 18h00</Text>
-                </View>
-              </View>
-              <Text style={styles.missionPrice}>35,00€</Text>
-            </TouchableOpacity>
+              {/* Bouton pour fermer le modal */}
+              <TouchableOpacity
+                style={styles.inProgressCloseButton}
+                onPress={() => setHistoryModalVisible(false)}
+              >
+                <Text style={styles.inProgressCloseButtonText}>FERMER</Text>
+              </TouchableOpacity>
             </View>
-
-            {/* Bouton pour fermer le modal */}
-            <TouchableOpacity
-              style={styles.inProgressCloseButton}
-              onPress={() => setHistoryModalVisible(false)}
-            >
-              <Text style={styles.inProgressCloseButtonText}>FERMER</Text>
-            </TouchableOpacity>
           </View>
         </View>
-        </View>
       </Modal>
+
 
     </View>
   );
@@ -544,6 +586,48 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     textAlign: 'center',
+  },
+
+  waitingBadge: {
+    backgroundColor: '#FFA500', // Orange
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    alignSelf: 'flex-start', // Ajuste la bulle à la largeur du contenu
+    marginTop: 5,
+  },
+  
+  waitingText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
+  dayText: {
+    color : 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign : 'center'
+  },
+  
+  dayContainer: {
+    width : 30,
+    height : 30,
+    backgroundColor : '#1E90FF',
+    borderRadius : 5
+  },
+
+  statusBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+    marginTop: 5,
+  },
+  statusText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });
 

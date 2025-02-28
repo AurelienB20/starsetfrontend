@@ -88,7 +88,7 @@ const JobViewScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <Image
-        source={{ uri : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png'}} // Remplacer avec l'image appropriée
+        source={{ uri : metier.picture_url}} // Remplacer avec l'image appropriée
         style={styles.jobImage}
       />
 

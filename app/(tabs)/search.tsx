@@ -113,7 +113,7 @@ const SearchScreen = () => {
         </View>
       </View>
         <Text style={styles.profileDescription}>
-          "Babysitting, animaux, assistance quotidienne, je suis là pour vous servir !"
+          {item.description}
         </Text>
         <View style={styles.profileCategories}>
           {item.metiers.slice(0, 3).map((metier: any, index: any) => (

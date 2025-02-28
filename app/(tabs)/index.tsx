@@ -1,21 +1,10 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, FlatList, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import config from '../../config.json';
 import { useNavigation } from '@react-navigation/native';
 
-const categories = [
-  { id: '1', title: 'MARIAGE', image: 'https://cache.magicmaman.com/data/photo/w1200_h630_ci/1ea/couple-mariage-exigences.jpg' },
-  { id: '2', title: 'SPORT', image: 'https://img.freepik.com/free-photo/sports-tools_53876-138077.jpg' },
-  { id: '3', title: 'ENFANT / PARENTALITE', image: 'https://blog.ama-campus.com/wp-content/uploads/2023/08/se-former-dans-la-petite-enfance.jpg' },
-  { id: '4', title: 'FORMATION & PROFESSEUR', image: 'https://www.ecoletremplin.ch/wp-content/uploads/2021/11/cours.jpeg' },
-  { id: '5', title: 'ANIMAUX', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROeS79QYYouwls4wY4QAL2C4zLLdKbxubHnA&s' },
-  { id: '6', title: 'EVENEMENTIEL', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIE5JDjhZl_GCQRh-oFkfG36aU7KEx1ICA9g&s' },
-  { id: '7', title: 'LOCATION', image: 'https://img-ccmbg-1.lefigaro.fr/1qiHUA8iESjIuSaWvGmKJU6HovE=/1500x/smart/bde83bb8bfbe4388b2f05686bfc0cc0c/ccmcms-figaroimmobilier/39471133.jpg' },
-  { id: '8', title: 'EDITION / IMPRIMERIE', image: 'https://www.atechprint.com/wp-content/uploads/2023/10/Imprimerie-pressse-numerique.png' },
-  { id: '9', title: 'JARDINAGE', image: 'https://i0.wp.com/www.greenweez.com/magazine/wp-content/uploads/2022/04/materil-jardinage.png?fit=810%2C539&ssl=1' },
-  { id: '10', title: 'BRICOLAGE / MAISON', image: 'https://www.capital.fr/imgre//fit/~1~cap~2024~03~14~d3e40af1-9b0b-4357-b4d5-c8cb72ab7c8d.jpeg/896x504/focus-point/50%2C50/background-color/ffffff/quality/70/picture.jpg' },
-];
+
 
 const profiles = [
   {
@@ -61,6 +50,8 @@ const HomeScreen = () => {
   const [showProfiles, setShowProfiles] = useState(false);
   const [workers, setWorkers] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [fetchedCategories, setFetchedCategories] = useState([]); // Nouvel état pour stocker les catégories
+  const [loading, setLoading] = useState(true);
   const navigation = useNavigation()
   const suggestions = [
     'Babysitter de nuit',
@@ -76,6 +67,7 @@ const HomeScreen = () => {
 
   // Affiche les profils lorsque l'utilisateur appuie sur la loupe
   const handleSearchSubmit = () => {
+    setShowSuggestions(false);
     searchWorkers()
     setShowProfiles(true);
   };
@@ -145,7 +137,7 @@ const HomeScreen = () => {
         </View>
       </View>
         <Text style={styles.profileDescription}>
-          "Babysitting, animaux, assistance quotidienne, je suis là pour vous servir !"
+          {item.description}
         </Text>
         <View style={styles.profileCategories}>
           {item.metiers.slice(0, 3).map((metier: any, index: any) => (
@@ -192,9 +184,9 @@ const HomeScreen = () => {
         onPressIn={() => setIsPressed(true)} // Activer le zoom
         onPressOut={() => setIsPressed(false)} // Désactiver le zoom
       >
-      <Image source={{ uri: item.image }} style={[styles.categoryImage,  isPressed && styles.pressedStyle]}  />
+      <Image source={{ uri: item.picture_url }} style={[styles.categoryImage,  isPressed && styles.pressedStyle]}  />
         <View style={styles.overlay}>
-          <Text style={styles.categoryText}>{item.title}</Text>
+          <Text style={styles.categoryText}>{item.name}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -203,6 +195,29 @@ const HomeScreen = () => {
   // Fonction pour rendre les items dans FlatList ou autre
   const renderCategoryItem = ({ item } : any) => {
     return <CategoryItem item={item} />;
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${config.backendUrl}/api/mission/get-all-field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        
+      });
+      const data = await response.json();
+      console.log(data)
+      setFetchedCategories(data.fields); // Mise à jour des catégories avec les données récupérées
+    } catch (error) {
+      console.error('Erreur lors de la récupération des catégories :', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -261,13 +276,15 @@ const HomeScreen = () => {
           keyExtractor={(item : any) => item.id}
           nestedScrollEnabled={true} // Permet le scrolling imbriqué
         />
+      ): loading ? (
+        <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
       ) : (
         <>
           <Text style={styles.sectionTitle}>En ce moment</Text>
           <FlatList
-            data={categories}
+            data={fetchedCategories} 
             renderItem={renderCategoryItem}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item : any) => item.name}
             numColumns={2}
             columnWrapperStyle={styles.row}
           />
@@ -364,8 +381,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   profileDescription: {
-    fontSize: 14,
+    fontSize: 12,
     marginVertical: 5,
+    textAlign : 'center',
+    fontFamily: 'BebasNeue',
   },
   profileCategories: {
     flexDirection: 'row',

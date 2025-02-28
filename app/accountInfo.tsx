@@ -9,16 +9,15 @@ const AccountInfoScreen = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState(new Date());
-  const [address, setAddress] = useState('');
+  
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const navigation = useNavigation();
   const route = useRoute() as any;
-  const { email, password , preferredFields} = route.params || {};
-
+  const { email, password , preferredFields, address, coordinates} = route.params || {};
+  console.log(coordinates)
   const handleFirstNameChange = (text : any) => setFirstName(text);
   const handleLastNameChange = (text : any) => setLastName(text);
-  const handleAddressChange = (text : any) => setAddress(text);
   const handlePhoneNumberChange = (text : any) => setPhoneNumber(text);
 
   const getAccountId = async () => {
@@ -48,6 +47,7 @@ const AccountInfoScreen = () => {
           birthDate: birthDate.toISOString().split('T')[0],
           address,
           phoneNumber,
+          coordinates : coordinates
         }),
       });
       const data = await response.json();
@@ -129,14 +129,6 @@ const AccountInfoScreen = () => {
       )}
 
       
-
-      <TextInput
-        style={styles.place}
-        onChangeText={handleAddressChange}
-        placeholder="Adresse"
-        placeholderTextColor="#808080"
-        value={address}
-      />
 
       <TextInput
         style={styles.number}

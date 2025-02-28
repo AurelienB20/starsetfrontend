@@ -27,6 +27,7 @@ const ChatScreen = () => {
   const goToPrestationViewWithId = (id : any) => {
     
     console.log(123)
+    console.log(id)
     navigation.navigate({
       name: 'prestationView',
       params: { id },
@@ -323,8 +324,8 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     marginHorizontal : 10,
     width : '70%',
-    backgroundColor : '#fff',
-    borderRadius: 10
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',  // Blanc avec 50% de transparence
+    borderRadius: 10,
   },
 
   categoryText2: {

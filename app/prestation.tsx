@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, Alert, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, Alert, Modal, TouchableWithoutFeedback, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,14 +14,7 @@ const PrestationScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [prestationPhotos, setPrestationPhotos] = useState<any>([])
   const [uploading, setUploading] = useState<boolean>(false);
-  const [prestation, setPrestation] = useState({
-    id: '',
-    worker_id: '',
-    metier: '',
-    description: null,
-    remuneration: null,
-    completedPrestation: 0,
-  });
+  const [prestation, setPrestation] = useState<any>({});
   const [experiences, setExperiences] = useState([])
   const [isPopupVisible, setIsPopupVisible] = useState(false); // État pour gérer la visibilité du popup
 
@@ -440,6 +433,36 @@ const PrestationScreen = () => {
     }
   };
 
+  const togglePrestationPublished = async () => {
+    try {
+      console.log('Début toggle prestation published');
+  
+      const response = await fetch(`${config.backendUrl}/api/mission/toggle-prestation-published`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: prestation_id }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      console.log('Mise à jour de la publication :', data);
+  
+      // Mettre à jour l'état de la prestation en inversant la valeur de published
+      setPrestation((prevPrestation : any) => ({
+        ...prevPrestation,
+        published: !prevPrestation.published,
+      }));
+    } catch (error) {
+      console.error('Une erreur est survenue lors de la mise à jour de la publication:', error);
+    }
+  };
+  
+
   useEffect(() => {
     getPrestation();
     getAllExperience();
@@ -797,7 +820,20 @@ const PrestationScreen = () => {
         )}
       </View>
       )}
-
+      <View style={styles.publishContainer}>
+        <TouchableOpacity
+            style={[
+            styles.publishButton,
+            prestation.published ? styles.unpublishButton : styles.publishButton,
+            ]}
+            onPress={togglePrestationPublished}
+        >
+            <Text style={styles.publishButtonText}>
+            {prestation.published ? "Retirer" : "Publier"}
+            </Text>
+        </TouchableOpacity>
+        </View>
+      
       <Modal
         visible={isImageModalVisible}
         transparent={true}
@@ -821,7 +857,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     
     paddingVertical: 20,
-  },
+  } as ViewStyle,
   iconContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -889,12 +925,12 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: '33.33%',
-    height : '1',
+    height : 1,
     aspectRatio: 1,
   },
   addPhotoButton: {
     width: '33.33%',
-    height : '1',
+    height : 1,
     aspectRatio: 1,
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
@@ -1245,6 +1281,29 @@ const styles = StyleSheet.create({
     width: '90%', // Adapte l'image à l'écran
     height: '90%',
     resizeMode: 'contain',
+  },
+
+  publishContainer: {
+    width : '100%',
+    alignItems : 'center', 
+    marginVertical : 20,
+    marginBottom : 40
+  },
+  publishButton: {
+    backgroundColor: '#00cc66',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: 300,
+  },
+  publishButtonText: {
+    fontSize: 16,
+    color: '#FFF',
+    fontWeight : 'bold'
+  },
+
+  unpublishButton: {
+    backgroundColor: '#cc0000', // Rouge
   },
   
 });

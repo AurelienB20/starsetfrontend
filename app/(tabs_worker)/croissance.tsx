@@ -1,14 +1,45 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons'; // Ajout de FontAwesome pour l'icône
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import config from '../../config.json';
 
 const CroissanceScreen = () => {
+  const [jobsOfTheDay, setJobsOfTheDay] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const news = {
     title: "Big Announcement",
     date: "September 22, 2024",
     description: "We are excited to introduce new features to our platform that will make your job search easier and more efficient!"
   };
+
+  const fetchJobsOfTheDay = async () => {
+    try {
+      const response = await fetch(`${config.backendUrl}/api/mission/get-job-of-the-day`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch jobs');
+      }
+
+      const data = await response.json();
+      setJobsOfTheDay(data.metiers || []);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    
+
+    fetchJobsOfTheDay();
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
@@ -40,23 +71,17 @@ const CroissanceScreen = () => {
 
       <Text style={styles.sectionHeader}>JOBS OF THE DAY</Text>
       <View style={styles.jobsContainer}>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://t3.ftcdn.net/jpg/04/38/55/14/360_F_438551496_R1vZqWEOrDUkfZGLZiIbzsexrtUPFfCX.jpg'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>Babysitter</Text>
+          {jobsOfTheDay.length > 0 ? (
+            jobsOfTheDay.map((job : any, index) => (
+              <View key={index} style={styles.jobItem}>
+                <Image source={{ uri: job.picture_url || 'https://cdn-icons-png.flaticon.com/512/91/91501.png' }} style={styles.jobIcon} />
+                <Text style={styles.jobText}>{job.name}</Text>
+              </View>
+            ))
+          ) : (
+            <Text >Aucun job disponible</Text>
+          )}
         </View>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/94/94055.png'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>Coiffeur</Text>
-        </View>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/3060/3060805.png'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>Wedding Plan</Text>
-        </View>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/91/91501.png'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>Promeneur</Text>
-        </View>
-      </View>
 
       <Text style={styles.sectionHeader}>CES JOBS QUI ONT BESOIN DE VOUS</Text>
       <View style={styles.jobsContainer}>
