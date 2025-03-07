@@ -57,12 +57,12 @@ const ConversationScreen = () => {
       style={styles.messageContainer} 
       onPress={() => gotoChat(item.id, item.profile_picture_url, item.firstname)} // Appel de la fonction avec l'ID de la conversation
     >
-      <Image
-        source={{
-          uri: item.profile_picture_url,
-        }}
-        style={styles.profileImage}
-      />
+      {item.profile_picture_url ? (
+        <Image source={{ uri: item.profile_picture_url }} style={styles.profileImage} />
+      ) : (
+        <Image source={{ uri: "https://static.vecteezy.com/ti/vecteur-libre/p1/7033146-icone-de-profil-login-head-icon-vectoriel.jpg"}} style={styles.profileImage} />
+      )}
+      
       <View style={styles.messageContent}>
         <Text style={styles.name}>{item.firstname}</Text>
         <Text style={styles.message}>{item.message_text}</Text>
@@ -128,6 +128,9 @@ const ConversationScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.messagerieContainer}>
+        <Image source={{uri : 'http://109.176.199.54/images/icon/messagerie.png'}} style={styles.messagerie} />
+      </View>
       <TextInput
         style={styles.searchBar}
         placeholder="Rechercher"
@@ -155,7 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginVertical: 20,
+    marginBottom: 20,
   },
 
   messageContainer: {
@@ -211,6 +214,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+  
+  messagerie : {
+    resizeMode : 'contain',
+    height : 80,
+    width : '80%',
+  },
+
+  messagerieContainer : {
+    width : '100%',
+    justifyContent : 'center',
+    alignItems : 'center',
+  }
 });
 
 export default ConversationScreen;

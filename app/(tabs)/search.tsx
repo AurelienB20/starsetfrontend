@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 
 
 import { StyleSheet, TextStyle, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons,MaterialIcons } from '@expo/vector-icons';
 import config from '../../config.json';
 import * as Font from 'expo-font';
 import { useFonts, BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
@@ -102,10 +102,18 @@ const SearchScreen = () => {
       style={styles.profileContainerList}
       onPress={() => goToPrestationViewWithId(item.metiers[0]?.id)}
     >
+      {item.profile_picture_url ? (
       <Image source={{ uri: item.profile_picture_url }} style={styles.profileImage} />
+    ) : (
+      <Image source={{ uri: "https://static.vecteezy.com/ti/vecteur-libre/p1/7033146-icone-de-profil-login-head-icon-vectoriel.jpg"}} style={styles.profileImage} />
+    )}
       <View style={styles.profileInfo}>
         <View style={styles.nameAndRating}>
-          <Text style={styles.profileName}>{item.firstname}</Text>
+          
+          <View>
+            <Text style={styles.profileName}>{item.firstname}</Text>
+            <Text style={styles.pseudo}>{item.pseudo}</Text>
+          </View>
           <View style={styles.ratingContainer}>
           {[...Array(5)].map((_, index) => (
             <Ionicons key={index} name="star" size={16} color="gold" />
@@ -147,7 +155,11 @@ const SearchScreen = () => {
   
 
   return (
+    <ScrollView style={styles.scrollContainer}>
     <View style={styles.container}>
+      
+
+      
       <Text style={styles.headerText}>Star Set</Text>
       <FlatList
         data={prestations} 
@@ -177,7 +189,9 @@ const SearchScreen = () => {
       <TouchableOpacity style={styles.button}>
         <Text style={styles.buttonText}>Voir Plus</Text>
       </TouchableOpacity>
+      
     </View>
+    </ScrollView>
   );
 };
 
@@ -190,6 +204,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingTop : 30
   },
+
+  scrollContainer: {
+    //flex: 1,
+    
+    width : '100%'
+  },
+
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -365,6 +386,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, // Un petit padding pour éviter le collage complet à gauche
     marginBottom: 20,
     paddingVertical: 10,
+  },
+
+  pseudo: {
+    color: '#888',
+    fontSize: 14,
+    
   },
 });
 

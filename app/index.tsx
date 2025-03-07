@@ -6,14 +6,52 @@ import { useNavigation } from '@react-navigation/native';
 import config from '../config.json';
 import FastImage from 'react-native-fast-image';
 import { Image } from 'expo-image';
+import { useUser } from '@/context/userContext';
 
 const StarsetScreen = () => {
   const [progress, setProgress] = useState(0);
   const [showGif, setShowGif] = useState(true); // État pour afficher le GIF ou l'image statique
-  
+  const { setUser } = useUser()
   const navigation = useNavigation();
 
+  const getAccountId = async () => {
+    try {
+      const account_id = await AsyncStorage.getItem('account_id');
+      console.log("account_id 123")
+      console.log(account_id)
+      if (account_id !== null) {
+        return account_id;
+      }
+    } catch (e) {
+      console.error('Erreur lors de la récupération du type de compte', e);
+    }
+  };
+
+  const getProfile = async () => {
+    try {
+      const accountId = await getAccountId();
+      if (!accountId) return;
+
+      const response = await fetch(`${config.backendUrl}/api/auth/get-account-by-id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId }),
+      });
+
+      if (!response.ok) throw new Error('Erreur de réseau');
+
+      const data = await response.json();
+      console.log('Utilisateur chargé:', data.account);
+
+      setUser(data.account); // Met à jour le contexte utilisateur
+    } catch (error) {
+      console.error('Erreur lors du chargement du profil:', error);
+    }
+  };
+
   useEffect(() => {
+    getProfile()
+
     const checkAccount = async () => {
       try {
         const accountId = await AsyncStorage.getItem('account_id');

@@ -18,6 +18,8 @@ const ConversationScreen = () => {
     try {
       const worker_id = await AsyncStorage.getItem('worker_id');
       if (worker_id !== null) {
+        console.log(worker_id)
+        console.log("worker_id conv" )
         return worker_id;
       }
     } catch (e) {
@@ -77,6 +79,8 @@ const ConversationScreen = () => {
   const getAllConversation = async () => {
     try {
       const worker_id = await getWorkerId();
+      console.log('ICI 12345')
+      console.log(worker_id)
       const response = await fetch(`${config.backendUrl}/api/conversation/get-all-worker-conversation`, {
         method: 'POST',
         headers: {
@@ -128,6 +132,9 @@ const ConversationScreen = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.messagerieContainer}>
+        <Image source={{uri : 'http://109.176.199.54/images/icon/messagerie.png'}} style={styles.messagerie} />
+      </View>
       <TextInput
         style={styles.searchBar}
         placeholder="Rechercher"
@@ -153,7 +160,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     borderRadius: 10,
     paddingHorizontal: 10,
-    marginVertical: 20,
+    marginBottom: 20,
   },
   messageContainer: {
     flexDirection: 'row',
@@ -200,6 +207,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+
+  messagerie : {
+    resizeMode : 'contain',
+    height : 80,
+    width : '80%',
+  },
+
+  messagerieContainer : {
+    width : '100%',
+    justifyContent : 'center',
+    alignItems : 'center',
+  }
 });
 
 export default ConversationScreen;

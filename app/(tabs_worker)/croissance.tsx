@@ -43,7 +43,9 @@ const CroissanceScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Image source={{uri : 'http://109.176.199.54/images/icon/Croissance.png'}} style={styles.croissance} />
+      <View style={styles.croissanceContainer}>
+        <Image source={{uri : 'http://109.176.199.54/images/icon/croissance_header.png'}} style={styles.croissance} />
+      </View>
       
       
       <View style={styles.statsContainer}>
@@ -225,8 +227,16 @@ const styles = StyleSheet.create({
     
     resizeMode : 'contain',
     height : 80,
-    marginBottom : 30
+    marginBottom : 30,
+    width : '80%',
   },
+
+  croissanceContainer : {
+    width : '100%',
+    justifyContent : 'center',
+    alignItems : 'center',
+    
+  }
 });
 
 export default CroissanceScreen;

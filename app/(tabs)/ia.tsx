@@ -137,6 +137,12 @@ const ChatScreen = () => {
       </TouchableOpacity>
     );
 
+    return (
+      <View style={styles.fullScreenContainer}>
+        <Text style={styles.centeredText}>IA en développement</Text>
+      </View>
+    );
+
   return (
     <KeyboardAvoidingView
           style={styles.container}
@@ -330,6 +336,18 @@ const styles = StyleSheet.create({
 
   categoryText2: {
     fontSize: 7,
+    color: '#333',
+  },
+
+  fullScreenContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#D4F1E3', // Garde la couleur de fond
+  },
+  centeredText: {
+    fontSize: 30,
+    fontWeight: 'bold',
     color: '#333',
   },
 });

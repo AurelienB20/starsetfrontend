@@ -199,7 +199,7 @@ const AccountScreen = () => {
           
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{account?.firstname} {account?.lastname}</Text>
-            <Text style={styles.profileHandle}>{account?.pseudo}</Text>
+            <Text style={styles.profileHandle}>@{account?.pseudo}</Text>
           </View>
         </View>
         <View style={styles.rightHeader}>

@@ -1,184 +1,165 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ImageBackground, GestureResponderEvent } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StyleSheet, TextStyle } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-//import axios from '../api/axios';
 import config from '../config.json';
 
 const CreationScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isChecked, setIsChecked] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isEmailValid, setIsEmailValid] = useState(true);
   const navigation = useNavigation();
 
-  const handleEmailChange = (text:React.SetStateAction<string>) => {
+  const handleEmailChange = (text : any) => {
     setEmail(text);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setIsEmailValid(emailRegex.test(text));
   };
 
-  const handlePasswordChange = (text:React.SetStateAction<string>) => {
+  const handlePasswordChange = (text : any) => {
     setPassword(text);
   };
 
-  const handleConfirmPasswordChange = (text:React.SetStateAction<string>) => {
+  const handleConfirmPasswordChange = (text : any) => {
     setConfirmPassword(text);
   };
 
   const handleSubmit = async () => {
-    if (password==confirmPassword)  {
-      console.log(password)
-      navigation.navigate({
-        name: 'selectFields',
-        params: {email : email, password : password},
-      } as never);
+    if (!isEmailValid) {
+      setErrorMessage('Veuillez entrer une adresse e-mail valide.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage('Les mots de passe ne correspondent pas.');
+      return;
     }
     
-  };
-
-  const saveData = async (account: any) => {
-    try {
-      await AsyncStorage.setItem('account_id', account['id']);
-      await AsyncStorage.setItem('worker_id', account['worker_id']);
-      
-    } catch (e) {
-      // gérer les erreurs de stockage ici
-      console.error('Erreur lors de la sauvegarde du type de compte', e);
-    }
-  };
-
-  const toggleCheckbox = (event: GestureResponderEvent): void => {
-    setIsChecked(!isChecked);
+    navigation.navigate({
+      name: 'selectFields',
+      params: { email: email, password: password },
+    } as never);
   };
 
   return (
     <View style={styles.container}>
-
-        <Text
-          style={styles.enter}
-        >
-          Création par Email !
-        </Text>
-        
-        <Text
-          style={styles.subtitle}
-        >
-          Laissez-nous identifier votre profil, Star Set n'attends plus que vous !
-        </Text>
-        
-          <TextInput
-            style={styles.inputemailcreation}
-            onChangeText={handleEmailChange}
-            
-            placeholder="starset@exemple.com"
-            placeholderTextColor="#808080"
-          />
-          <TextInput
-            style={styles.inputpassword}
-            onChangeText={handlePasswordChange}
-            
-            placeholder="mot de passe"
-            placeholderTextColor="#808080"
-          />
-          <TextInput
-            style={styles.inputpassword}
-            onChangeText={handleConfirmPasswordChange}
-            
-            placeholder="confirmation mot de passe"
-            placeholderTextColor="#808080"
-          />
-          <TouchableOpacity
-            onPress={handleSubmit}
-            style={styles.submitbutton}
-          >
-            <Text style={{ fontSize: 20, fontWeight : 'bold', }}>Suivant</Text>
-          </TouchableOpacity>
-        
-        
+      <Text style={styles.enter}>Création par Email !</Text>
+      <Text style={styles.subtitle}>
+        Laissez-nous identifier votre profil, Star Set n'attend plus que vous !
+      </Text>
       
+      <TextInput
+        style={[styles.inputemailcreation, !isEmailValid && styles.inputError]}
+        onChangeText={handleEmailChange}
+        placeholder="starset@exemple.com"
+        placeholderTextColor="#808080"
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      {!isEmailValid && <Text style={styles.errorText}>Email invalide</Text>}
+      
+      <TextInput
+        style={styles.inputpassword}
+        onChangeText={handlePasswordChange}
+        placeholder="Mot de passe"
+        placeholderTextColor="#808080"
+        secureTextEntry={true}
+      />
+      
+      <TextInput
+        style={styles.inputpassword}
+        onChangeText={handleConfirmPasswordChange}
+        placeholder="Confirmer le mot de passe"
+        placeholderTextColor="#808080"
+        secureTextEntry={true}
+      />
+      
+      {errorMessage !== '' && <Text style={styles.errorText}>{errorMessage}</Text>}
+      
+      <TouchableOpacity
+        onPress={handleSubmit}
+        style={styles.submitbutton}
+        disabled={!isEmailValid}
+      >
+        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Suivant</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container : {
-    width : '100%',
-    height : '100%',
-    backgroundColor : '#FFFFFF',
-    paddingHorizontal : 10,
-    flex: 1, alignItems: 'center', justifyContent: 'center' ,
-    marginHorizontal: 3
-},
-
+  container: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 3,
+  },
   enter: {
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: 40,
-    marginTop: 0,
-    marginHorizontal : 20,
-    color : 'black'
+    marginHorizontal: 20,
+    color: 'black',
   },
-
   subtitle: {
     marginTop: 10,
     fontSize: 10,
-    textAlign: "center",
-    color : 'black',
-    marginBottom : 50,
-    
+    textAlign: 'center',
+    color: 'black',
+    marginBottom: 50,
   },
-
-
   inputemailcreation: {
-    fontFamily: "Outfit",
     width: '70%',
-    maxWidth : 450,
-    backgroundColor: "white",
+    maxWidth: 450,
+    backgroundColor: 'white',
     borderRadius: 15,
-    borderWidth: 2,         
-    borderColor: 'black', 
-    color: "black",
-    textAlign: "center",
+    borderWidth: 2,
+    borderColor: 'black',
+    color: 'black',
+    textAlign: 'center',
     fontSize: 15,
     padding: 10,
     marginTop: 10,
     marginBottom: 10,
-    marginHorizontal : 10,
-   
-    paddingHorizontal : 30,
+    paddingHorizontal: 30,
   },
-
-  
   inputpassword: {
-    fontFamily: "Outfit",
     width: '70%',
-    maxWidth : 450,
-    backgroundColor: "white",
+    maxWidth: 450,
+    backgroundColor: 'white',
     borderRadius: 15,
-    borderWidth: 2,       
-    borderColor: 'black',   
-    color: "black",
-    textAlign: "center",
+    borderWidth: 2,
+    borderColor: 'black',
+    color: 'black',
+    textAlign: 'center',
     fontSize: 15,
     padding: 10,
     marginTop: 10,
-    marginHorizontal : 10,
-    paddingHorizontal : 30,
+    paddingHorizontal: 30,
   },
-
-  submitbutton : {       
+  inputError: {
+    borderColor: 'red',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  submitbutton: {
     maxWidth: 300,
-    width: "60%",
+    width: '60%',
     height: 50,
     backgroundColor: '#70FF70',
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 10,
-    borderRadius : 25,
-    marginHorizontal : 10,
+    borderRadius: 25,
   },
-  
 });
 
 export default CreationScreen;

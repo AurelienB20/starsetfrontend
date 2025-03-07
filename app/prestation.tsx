@@ -8,6 +8,14 @@ import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'av
 import config from '../config.json';
 import * as ImagePicker from 'expo-image-picker';
 
+import {
+  getPrestation,
+  getAllExperience,
+  getAllCertification,
+  handleSaveDescription,
+  togglePrestationPublished,
+} from '../api/prestationApi';
+
 const PrestationScreen = () => {
   const [description, setDescription] = useState('');
   const [selectedTab, setSelectedTab] = useState('photos'); // 'photos', 'experiences', or 'certifications'
@@ -191,39 +199,6 @@ const PrestationScreen = () => {
     }
   }
 
-  const getPrestation = async () => {
-    try {
-      console.log('debut prestation')
-      
-      const response = await fetch(`${config.backendUrl}/api/mission/get-prestation`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prestation_id }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      //console.log(data)
-      console.log('Prestation:', data.prestation);
-      //console.log('images : ' , data.images)
-
-      // Stocker les prestations dans l'état
-      setPrestation(data.prestation);
-      setPrestationPhotos(data.images);
-      
-      console.log('ici')
-      console.log(data.images)
-      setRemuneration(data.prestation.remuneration);
-    } catch (error) {
-      console.error('Une erreur est survenue lors de la récupération des prestations:', error);
-    }
-  };
-
   const handleSaveRemuneration = async () => {
     // Code pour sauvegarder la rémunération
     setModalVisible(false);
@@ -246,29 +221,7 @@ const PrestationScreen = () => {
   };
 
   
-  const getAllExperience = async () => {
-    try {
-      console.log('debut get experiences')
-      
-      const response = await fetch(`${config.backendUrl}/api/mission/get-all-experience`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prestation_id }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const data = await response.json();
-      console.log('experiences :', data.experiences);
-      setExperiences(data.experiences);
-      
-    } catch (error) {
-      console.error('Une erreur est survenue lors de la récupération des experiences:', error);
-    }
-  };
+  
 
   const getAllCertification = async () => {
     try {
@@ -433,6 +386,23 @@ const PrestationScreen = () => {
     }
   };
 
+  const confirmTogglePrestationPublished = () => {
+    const action = prestation.published ? "dépublier" : "publier";
+  
+    Alert.alert(
+      ``,
+      `Voulez-vous vraiment ${action} cette prestation ?`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: prestation.published ? "Dépublier" : "Publier",
+          style: "destructive",
+          onPress: togglePrestationPublished, // Appelle la fonction qui gère la publication
+        },
+      ]
+    );
+  };
+
   const togglePrestationPublished = async () => {
     try {
       console.log('Début toggle prestation published');
@@ -464,8 +434,16 @@ const PrestationScreen = () => {
   
 
   useEffect(() => {
-    getPrestation();
-    getAllExperience();
+    getPrestation(prestation_id).then(data => {
+      setPrestation(data.prestation);
+      setPrestationPhotos(data.images);
+      setRemuneration(data.prestation.remuneration);
+    }).catch(error => console.error(error));
+    
+    getAllExperience(prestation_id).then(data => {
+      setExperiences(data.experiences);
+    }).catch(error => console.error(error));
+
     getAllCertification();
   }, []);
 
@@ -826,7 +804,7 @@ const PrestationScreen = () => {
             styles.publishButton,
             prestation.published ? styles.unpublishButton : styles.publishButton,
             ]}
-            onPress={togglePrestationPublished}
+            onPress={confirmTogglePrestationPublished}
         >
             <Text style={styles.publishButtonText}>
             {prestation.published ? "Retirer" : "Publier"}

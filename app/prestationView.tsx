@@ -1,5 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Modal, TextInput } from 'react-native';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Modal, TextInput, Pressable } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'avoir installé cette bibliothèque
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -32,6 +32,8 @@ const PrestationViewScreen = () => {
   const [isImageModalVisible, setImageModalVisible] = useState(false); // Contrôle de la visibilité du modal
   const [selectedImage, setSelectedImage] = useState(null); // Image sélectionnée
   const [selectedTag, setSelectedTag] = useState<number | null>(null);
+  const [isConfirmModalVisible, setConfirmModalVisible] = useState(false); // Pour le pop-up
+  
   
   const hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')); // Array from "00" to "23"
   const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0')); // Array from "00" to "59"
@@ -162,6 +164,57 @@ const PrestationViewScreen = () => {
     }
   };
 
+  const checkConversation = async () => {
+    console.log('debut de checkConversation')
+    try {
+      const person1_id = await getAccountId();
+      const person2_id = await prestation.worker_id;
+      console.log(prestation.worker_id)
+      const person1_type = 'user';
+      const person2_type = 'worker';
+      console.log('ici 2')
+      console.log(JSON.stringify({ person1_id, person2_id, person1_type, person2_type }))
+      const response = await fetch(`${config.backendUrl}/api/conversation/check-conversation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person1_id, person2_id, person1_type, person2_type }),
+      });
+      console.log(response)
+      const data = await response.json();
+
+      if (data.exists) {
+        // Si la conversation existe, on va directement au chat
+        goToChat(data.conversation_id);
+      } else {
+        // Sinon, on affiche le pop-up de confirmation
+        setConfirmModalVisible(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de la conversation:', error);
+    }
+  };
+
+  const createConversation = async () => {
+    try {
+      const person1_id = await getAccountId();
+      const person2_id = prestation.worker_id;
+      const person1_type = 'user';
+      const person2_type = 'worker';
+
+      const response = await fetch(`${config.backendUrl}/api/conversation/create-conversation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person1_id, person2_id, person1_type, person2_type }),
+      });
+
+      const data = await response.json();
+      setConfirmModalVisible(false); // Fermer le modal
+      goToChat(data.conversation.id); // Aller au chat avec la nouvelle conversation
+    } catch (error) {
+      console.error('Erreur lors de la création de la conversation:', error);
+    }
+  };
+
   const getConversation = async () => {
     try {
       const prestation2 :any = prestationRef.current
@@ -282,6 +335,11 @@ const PrestationViewScreen = () => {
     setSelectedImage(imageUri);
     setImageModalVisible(true);
   };
+
+  const handlePressMail = useCallback(() => {
+    console.log("✅ checkConversation exécuté !");
+    checkConversation();
+  }, [checkConversation]); // Assurez-vous que la fonction ne change pas à chaque rendu
   
   const closeImageModal = () => {
     setSelectedImage(null);
@@ -289,35 +347,8 @@ const PrestationViewScreen = () => {
   };
 
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', marginRight: 10 }}>
-          {/* Icône enveloppe */}
-          <TouchableOpacity
-            onPress={() => {
-              getConversation();
-              
-              console.log('Icône enveloppe cliquée');
-            }}
-            style={{ marginRight: 15 }}
-          >
-            <Icon name="mail" size={24} color="black" />
-          </TouchableOpacity>
-
-          {/* Icône trois points verticaux pour paramètres */}
-          <TouchableOpacity
-            onPress={() => {
-              // Action pour les paramètres
-              console.log('Icône paramètres cliquée');
-            }}
-          >
-            <Icon name="more-vert" size={24} color="black" />
-          </TouchableOpacity>
-        </View>
-      ),
-    });
-  }, [navigation]);
+  
+  
 
   useEffect(() => {
     getPrestation();
@@ -624,10 +655,61 @@ const PrestationViewScreen = () => {
           </TouchableOpacity>
         </View>
       </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isConfirmModalVisible}
+        onRequestClose={() => setConfirmModalVisible(false)}
+      >
+        <View style={styles.conversationModalContainer}>
+          <View style={styles.conversationModalContent}>
+            <Text style={styles.conversationModalTitle}>Démarrer une conversation ?</Text>
+            <Text style={styles.conversationModalText}>
+              Voulez-vous envoyer un message à {account?.firstname} ?
+            </Text>
+
+            <View style={styles.conversationModalButtonContainer}>
+              <TouchableOpacity style={styles.conversationModalButton} onPress={createConversation}>
+                <Text style={styles.conversationModalText}>Oui</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.conversationModalCancelButton} onPress={() => setConfirmModalVisible(false)}>
+                <Text style={styles.conversationModalCancelButtonText}>Non</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       
     </ScrollView>
 
+    <View style={styles.headerBar}>
+      {/* Flèche retour */}
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Icon name="arrow-back" size={30} color="black" />
+      </TouchableOpacity>
+    
+            
+    
+            {/* Icônes à droite */}
+      <View style={styles.headerIcons}>
+        <TouchableOpacity
+          onPress={checkConversation}
+          style={styles.iconButton}
+        >
+          <Icon name="mail" size={30} color="black" />
+        </TouchableOpacity>
+    
+        <TouchableOpacity
+          onPress={() => console.log("✅ Icône paramètres cliquée !")}
+          style={styles.iconButton}
+        >
+          <Icon name="more-vert" size={30} color="black" />
+        </TouchableOpacity>
+      </View>
+    </View>
     {/* Ajouter au panier */}
+    
     <View style={styles.addButtonFixedContainer}>
         <TouchableOpacity style={styles.addButton} onPress={toggleCalendar}>
           <Text style={styles.addButtonText}>Ajouter au panier</Text>
@@ -641,15 +723,16 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     paddingTop: 40,
+    marginTop : 50
   },
   header: {
     alignItems: 'center',
     paddingHorizontal: 10,
   },
   profilePicture: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
   profileName: {
     fontSize: 24,
@@ -680,7 +763,7 @@ const styles = StyleSheet.create({
     //backgroundColor: '#f0f0f0', // Couleur par défaut pour les badges
   },
   selectedTag: {
-    backgroundColor: '#dcdcdc', // Fond grisé
+    backgroundColor: 'gold', // Fond grisé
     borderColor: '#999', // Bordure visible
   },
   tagText: {
@@ -731,6 +814,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     //justifyContent: 'space-around',
     marginVertical: 20,
+    marginLeft : 10
   },
   tabButton: {
     padding: 10,
@@ -743,7 +827,7 @@ const styles = StyleSheet.create({
   },
   tabButtonText: {
     color: '#FFF',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight : 'bold'
   },
   photosContainer: {
@@ -875,7 +959,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center', // Centré horizontalement
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', // Fond semi-transparent (optionnel)
+    
     paddingVertical: 10, // Espacement autour du bouton
     zIndex: 1000, // Toujours au-dessus du contenu
   },
@@ -1094,6 +1178,88 @@ const styles = StyleSheet.create({
     width: '90%', // Adapte l'image à l'écran
     height: '90%',
     resizeMode: 'contain',
+  },
+
+  conversationModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  conversationModalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  conversationModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  conversationModalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  conversationModalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  conversationModalButton: {
+    backgroundColor: 'green',
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  conversationModalButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  conversationModalCancelButton: {
+    backgroundColor: 'red',
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  conversationModalCancelButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+
+  // HEADER
+  headerBar: {
+    position : 'absolute',
+    top: 0, // Positionné à 10px du bas de l'écran
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  backButton: {
+    padding: 5,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+    flex: 1,
+    textAlign: 'center', // Centrage du titre
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    padding: 5,
+    marginLeft: 10,
   },
 
   

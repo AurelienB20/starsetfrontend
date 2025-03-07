@@ -5,11 +5,14 @@ import { saveMode } from '../chooseAccount';
 import config from '../../config.json';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '@/context/userContext';
+
 
 const AccountWorkerScreen = () => {
 
   const [account, setAccount] = useState<any>(null)
   const navigation = useNavigation();
+  const { user } = useUser(); // Utilisation du contexte pour récupérer les infos utilisateur
 
   const changeToUser = async () => {
     saveMode('user')
@@ -18,10 +21,7 @@ const AccountWorkerScreen = () => {
       name: '(tabs)',
       params: { screen: 'account' },
     } as never);
-    //navigation.navigate({
-    //  name: '(tabs)/account',
-    //  screen: 'account',
-    //} as never);
+    
   }
 
   const getAccountId = async () => {
@@ -81,8 +81,8 @@ const AccountWorkerScreen = () => {
             style={styles.profilePicture}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{account?.firstname} {account?.lastname}</Text>
-            <Text style={styles.profileHandle}>{account?.pseudo}</Text>
+            <Text style={styles.profileName}>{user?.firstname} {user?.lastname}</Text>
+            <Text style={styles.profileHandle}>@{user?.pseudo}</Text>
           </View>
           
         </View>

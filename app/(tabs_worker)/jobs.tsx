@@ -22,12 +22,16 @@ const JobsScreen = () => {
   };
 
   const getWorkerId = async () => {
+    console.log("debut de get worker id")
     try {
       const worker_id = await AsyncStorage.getItem('worker_id');
       if (worker_id !== null) {
+        console.log("worker_id")
+        console.log(worker_id)
         return worker_id;
       }
     } catch (e) {
+      
       console.error('Erreur lors de la récupération du type de compte', e);
     }
   };
@@ -100,14 +104,15 @@ const JobsScreen = () => {
 
   const getWorkerPlannedPrestation = async () => {
     try {
-      const accountId = await getWorkerId();
-  
+      const worker_id = await getWorkerId();
+      console.log(worker_id)
+      console.log("worker_id2")
       const response = await fetch(`${config.backendUrl}/api/mission/get-worker-planned-prestation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ worker_id: accountId }),
+        body: JSON.stringify({ worker_id: worker_id }),
       });
   
       if (!response.ok) {

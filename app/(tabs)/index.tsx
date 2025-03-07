@@ -97,6 +97,26 @@ const HomeScreen = () => {
     }
   };
 
+  const searchWorkersByField = async (field : any) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${config.backendUrl}/api/mission/filter-workers-by-field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ field }),
+      });
+      const data = await response.json();
+      setWorkers(data.workers);
+      setShowProfiles(true);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des travailleurs :', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderSuggestion = ({ item } : any) => (
     <TouchableOpacity
       style={styles.suggestionItem}
@@ -129,7 +149,10 @@ const HomeScreen = () => {
       <Image source={{ uri: item.profile_picture_url }} style={styles.profileImage} />
       <View style={styles.profileInfo}>
         <View style={styles.nameAndRating}>
-          <Text style={styles.profileName}>{item.firstname}</Text>
+          <View>
+            <Text style={styles.profileName}>{item.firstname}</Text>
+            <Text style={styles.pseudo}>{item.pseudo}</Text>
+          </View>
           <View style={styles.ratingContainer}>
           {[...Array(5)].map((_, index) => (
             <Ionicons key={index} name="star" size={16} color="gold" />
@@ -181,6 +204,7 @@ const HomeScreen = () => {
           styles.categoryContainer,
          
         ]}
+        onPress={() => searchWorkersByField(item.name)}
         onPressIn={() => setIsPressed(true)} // Activer le zoom
         onPressOut={() => setIsPressed(false)} // Désactiver le zoom
       >
@@ -505,6 +529,12 @@ const styles = StyleSheet.create({
 
   suggestionsScroll: {
     maxHeight: 250, // Limite la hauteur pour éviter que ça couvre tout l'écran
+  },
+
+  pseudo: {
+    color: '#888',
+    fontSize: 14,
+    
   },
 
 });

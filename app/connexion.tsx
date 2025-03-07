@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 import { router } from 'expo-router';
 import config from '../config.json';
+import { useUser } from '@/context/userContext';
 
 const ConnexionScreen = () => {
   const [email, setEmail] = useState('');
@@ -13,6 +14,7 @@ const ConnexionScreen = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
+  const { setUser } = useUser()
   
 
   const handleEmailChange = (text: React.SetStateAction<string>) => {
@@ -25,6 +27,30 @@ const ConnexionScreen = () => {
 
   const goToCreate = () => {
     navigation.navigate('creation' as never)
+  };
+
+  
+
+  const getProfile = async (accountId :any) => {
+    try {
+      
+      if (!accountId) return;
+
+      const response = await fetch(`${config.backendUrl}/api/auth/get-account-by-id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId }),
+      });
+
+      if (!response.ok) throw new Error('Erreur de réseau');
+
+      const data = await response.json();
+      console.log('Utilisateur chargé:', data.account);
+
+      setUser(data.account); // Met à jour le contexte utilisateur
+    } catch (error) {
+      console.error('Erreur lors du chargement du profil:', error);
+    }
   };
 
   const handleSubmit = async () => {
@@ -44,6 +70,7 @@ const ConnexionScreen = () => {
         // Rediriger ou faire autre chose en cas de succès
         console.log(data.account);
         console.log(data.account['id'])
+        getProfile(data.account['id'])
         saveData(data.account)
        
         

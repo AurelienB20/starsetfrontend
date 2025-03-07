@@ -23,19 +23,22 @@ function RootLayoutNav() {
   };
 
   return (
-    <ThemeProvider value={MyTheme}>
-      <Stack initialRouteName="starsetScreen">
-        
-        <Stack.Screen name="starsetScreen"   options={{ headerShown: false }}/>
-        <Stack.Screen name="index"   options={{ headerShown: false }}/>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
-        <Stack.Screen name="(tabs_worker)" options={{ headerShown: false }}/>
-        <Stack.Screen name="connexion" options={{ headerShown: false }}/>
-        <Stack.Screen name="prestationView"   />
-        <Stack.Screen name="paymentMethod"  />
-        <Stack.Screen name="modifyAccount"  />
-      </Stack>
-    </ThemeProvider>
+    <UserProvider>
+      <ThemeProvider value={MyTheme}>
+        <Stack initialRouteName="starsetScreen">
+          
+          <Stack.Screen name="starsetScreen"   options={{ headerShown: false }}/>
+          <Stack.Screen name="index"   options={{ headerShown: false }}/>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }}/>
+          <Stack.Screen name="(tabs_worker)" options={{ headerShown: false }}/>
+          <Stack.Screen name="connexion" options={{ headerShown: false }}/>
+          <Stack.Screen name="prestationView"  options={{ headerShown : false }} />
+          <Stack.Screen name="paymentMethod"  />
+          <Stack.Screen name="modifyAccount"  />
+          <Stack.Screen name="modifyPseudo"  options={{ headerShown : false }} />
+        </Stack>
+      </ThemeProvider>
+    </UserProvider>
   );
 }
 
