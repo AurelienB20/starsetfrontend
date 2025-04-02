@@ -5,9 +5,8 @@ import JobsScreen from './jobs';
 import ConversationScreen from './conversation';
 import AccountWorkerScreen from './account_worker';
 import CroissanceScreen from './croissance';
-import { Entypo } from '@expo/vector-icons';
+
 import AddJobScreen from './addJob';
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'react-native';
 
 
@@ -17,14 +16,13 @@ function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['nam
   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
 }
 
-function TabBarIconEntypo(props: { name: React.ComponentProps<typeof Entypo>['name']; color: string; }) {
-  return <Entypo size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+
 
 export default function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: '#2f95dc', // Personnaliser la couleur active des icônes
       }}>
       <Tab.Screen

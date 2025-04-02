@@ -122,7 +122,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
+    marginTop : 20
   },
+  
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',

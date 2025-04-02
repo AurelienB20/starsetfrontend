@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Modal, TextInput, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Modal, TextInput, Pressable, Animated } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'avoir installé cette bibliothèque
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { Calendar } from 'react-native-calendars'; // Import the Calendar component
 import config from '../config.json';
+import { useFonts } from 'expo-font';
+import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
+import { Lexend_400Regular, Lexend_700Bold } from '@expo-google-fonts/lexend';
 
 const PrestationViewScreen = () => {
   const [selectedTab, setSelectedTab] = useState('photos'); // Onglet par défaut: 'photos'
@@ -44,6 +47,19 @@ const PrestationViewScreen = () => {
   const [departureHour, setDepartureHour] = useState('');
   const [departureMinute, setDepartureMinute] = useState('');
   const [selectedMetier, setSelectedMetier] = useState(null);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  
+    const profileImageSize = scrollY.interpolate({
+      inputRange: [0, 70],
+      outputRange: [120, 80],
+      extrapolate: 'clamp',
+    });
+
+    const [fontsLoaded] = useFonts({
+      BebasNeue_400Regular,
+      Lexend_400Regular,
+      Lexend_700Bold,
+    });
 
   const photos = [
     { uri: 'https://www.asiakingtravel.fr/cuploads/files/voyage-malaisie-itineraire-budget-circuit-7-jours-1.jpg' },
@@ -387,12 +403,23 @@ const PrestationViewScreen = () => {
 
   return (
     <View>
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={{ uri: profilePictureUrl }} 
-          style={styles.profilePicture}
+      <Animated.View style={[styles.profileContainer]}>
+        <Animated.Image
+          source={{ uri: profilePictureUrl }}
+          style={[styles.profilePicture, { width: profileImageSize, height: profileImageSize }]}
         />
+      </Animated.View>
+      
+    <Animated.ScrollView
+            style={styles.container}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={16}
+          >
+      <View style={styles.header}>
+        
         <Text style={styles.profileName}>{account?.firstname}</Text>
         <Text style={styles.profileDescription}>
           {account?.description || "Aucune description disponible"}
@@ -663,14 +690,13 @@ const PrestationViewScreen = () => {
       >
         <View style={styles.conversationModalContainer}>
           <View style={styles.conversationModalContent}>
-            <Text style={styles.conversationModalTitle}>Démarrer une conversation ?</Text>
             <Text style={styles.conversationModalText}>
               Voulez-vous envoyer un message à {account?.firstname} ?
             </Text>
 
             <View style={styles.conversationModalButtonContainer}>
               <TouchableOpacity style={styles.conversationModalButton} onPress={createConversation}>
-                <Text style={styles.conversationModalText}>Oui</Text>
+                <Text style={styles.conversationModalCancelButtonText}>Oui</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.conversationModalCancelButton} onPress={() => setConfirmModalVisible(false)}>
@@ -681,7 +707,7 @@ const PrestationViewScreen = () => {
         </View>
       </Modal>
       
-    </ScrollView>
+    </Animated.ScrollView>
 
     <View style={styles.headerBar}>
       {/* Flèche retour */}
@@ -723,7 +749,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
     paddingTop: 40,
-    marginTop : 50
+    marginTop : 170
   },
   header: {
     alignItems: 'center',
@@ -834,14 +860,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
-    alignItems : 'flex-start'
-   
-    
+    alignItems : 'center',
   },
+  
   photo: {
-    width: '100%',
+    width: '98%',
     aspectRatio: 1,
-    
+    alignSelf : 'center'
   },
   photoButton: {
     width: '33.33%',
@@ -1043,6 +1068,7 @@ const styles = StyleSheet.create({
     right: 10,
     padding: 5,
   },
+
   horairesButton: {
     marginTop: 20,
     padding: 10,
@@ -1193,45 +1219,54 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  
   conversationModalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
+
   conversationModalText: {
-    fontSize: 16,
+    fontSize: 30,
     marginBottom: 20,
     textAlign: 'center',
+    fontFamily: 'BebasNeue_400Regular' ,
   },
+
   conversationModalButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginVertical : 20
   },
   conversationModalButton: {
     backgroundColor: 'green',
-    padding: 10,
-    borderRadius: 5,
+    padding: 5,
+    paddingHorizontal : 15,
+    borderRadius: 15,
     marginHorizontal: 10,
   },
   conversationModalButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 20,
+    fontFamily: 'BebasNeue_400Regular' 
   },
   conversationModalCancelButton: {
     backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 5,
+    padding: 5,
+    paddingHorizontal : 15,
+    borderRadius: 15,
     marginHorizontal: 10,
   },
   conversationModalCancelButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 30,
+    fontFamily: 'BebasNeue_400Regular' 
   },
 
   // HEADER
   headerBar: {
     position : 'absolute',
-    top: 0, // Positionné à 10px du bas de l'écran
+    top: 10, // Positionné à 10px du bas de l'écran
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -1261,8 +1296,14 @@ const styles = StyleSheet.create({
     padding: 5,
     marginLeft: 10,
   },
-
-  
+  profileContainer: {
+    position: 'absolute',
+    top: 90,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 10,
+  },
 });
 
 export default PrestationViewScreen;

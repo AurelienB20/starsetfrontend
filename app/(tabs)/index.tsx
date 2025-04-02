@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, FlatList, S
 import { Ionicons } from '@expo/vector-icons';
 import config from '../../config.json';
 import { useNavigation } from '@react-navigation/native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const profiles = [
@@ -55,9 +55,8 @@ const HomeScreen = () => {
   const navigation = useNavigation()
   const suggestions = [
     'Babysitter de nuit',
-    'Babysitter petsitter',
-    'Babysitter autour de moi',
   ];
+  const [recentSearches, setRecentSearches] = useState([]); // Historique de recherche
 
   // Met à jour la recherche sans déclencher l'affichage
   const handleInputChange = (text: any) => {
@@ -65,9 +64,26 @@ const HomeScreen = () => {
     setShowSuggestions(true); // Affiche les suggestions dès qu'on clique sur la barre de recherche
   };
 
+  // Sauvegarder une nouvelle recherche
+  const saveRecentSearch = async (query: any) => {
+    try {
+      let updatedSearches: any = [...recentSearches];
+      if (!updatedSearches.includes(query)) {
+        updatedSearches.unshift(query); // Ajouter en haut de la liste
+        if (updatedSearches.length > 5) updatedSearches.pop(); // Limiter à 5 recherches
+        await AsyncStorage.setItem('recentSearches', JSON.stringify(updatedSearches));
+        console.log(updatedSearches)
+        setRecentSearches(updatedSearches);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement de la recherche:', error);
+    }
+  };
+
   // Affiche les profils lorsque l'utilisateur appuie sur la loupe
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = async () => {
     setShowSuggestions(false);
+    await saveRecentSearch(search);
     searchWorkers()
     setShowProfiles(true);
   };
@@ -76,6 +92,18 @@ const HomeScreen = () => {
   const clearSearch = () => {
     setSearch('');
     setShowProfiles(false);
+  };
+
+  // Charger l'historique des recherches
+  const loadRecentSearches = async () => {
+    try {
+      const searches = await AsyncStorage.getItem('recentSearches');
+      if (searches) {
+        setRecentSearches(JSON.parse(searches));
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des recherches récentes:', error);
+    }
   };
 
   const searchWorkers = async () => {
@@ -223,6 +251,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     fetchCategories();
+    loadRecentSearches();
   }, []);
 
   const fetchCategories = async () => {
@@ -275,7 +304,18 @@ const HomeScreen = () => {
       {/* Suggestions de recherche */}
       {showSuggestions && (
         <View style={styles.suggestionsContainer}>
+          
           <ScrollView style={styles.suggestionsScroll}>
+          {recentSearches.length > 0 && (
+            <>
+            <Text style={styles.sectionTitle}>Recherches récentes</Text>
+              <FlatList
+                data={recentSearches}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={renderSuggestion}
+              />
+              </>
+            )}
             <FlatList
               data={suggestions}
               renderItem={renderSuggestion}
@@ -374,12 +414,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingHorizontal : 10
+
   },
   categoryText: {
     fontSize: 16,
     color: '#ffffff',
     fontWeight: 'bold',
     marginBottom: 10,
+    textAlign : 'center'
   },
   profileContainer: {
     flexDirection: 'row',

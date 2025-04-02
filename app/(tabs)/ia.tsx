@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image, Animated, Easing } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -12,6 +12,22 @@ const ChatScreen = () => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const route = useRoute() as any;
+
+  const spinValue = new Animated.Value(0);
+
+Animated.loop(
+  Animated.timing(spinValue, {
+    toValue: 1,
+    duration: 3000, // 1 seconde pour un tour complet
+    easing: Easing.linear,
+    useNativeDriver: true, // Optimisation pour les performances
+  })
+).start();
+
+const spin = spinValue.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['0deg', '360deg'],
+});
   
 
   const getAccountId = async () => {
@@ -67,10 +83,35 @@ const ChatScreen = () => {
       const tempMessage = {
         message_text: newMessage,
         sender_id: user_id,
+        sended_by_user : true
       };
-      setMessages([...messages, tempMessage, { loading: true }]);
+      setMessages([...messages, tempMessage]);
       setNewMessage('');
       setLoading(true);
+
+      // Après 5 secondes, retire le loading et affiche 2 réponses IA
+    setTimeout(() => {
+      setMessages((prev : any) => {
+        setLoading(false);
+        // Supprimer le dernier message (le "loading")
+        const withoutLoading = prev;
+
+        return [
+          ...withoutLoading,
+          { message_text: 'Bonjour', sended_by_user: false },
+        ];
+      });
+
+      // Affiche le 2e message IA après 1 seconde
+      setTimeout(() => {
+        setMessages((prev : any) => [
+          ...prev,
+          { message_text: 'Que voulez-vous ?', sended_by_user: false },
+        ]);
+        
+      }, 1000);
+    }, 5000);
+
       
       try {
         const response = await fetch(`${config.backendUrl}/api/ai/send-ai-message`, {
@@ -101,7 +142,7 @@ const ChatScreen = () => {
   
 
   useEffect(() => {
-    getAllMessages();
+    //getAllMessages();
   }, []);
 
    const renderProfileItem = ({ item }: any) => (
@@ -150,7 +191,7 @@ const ChatScreen = () => {
           keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
           <View style={styles.greenCircle}></View>
-      <ScrollView>
+      <ScrollView style={styles.scrollContainer}>
       
       <View style={styles.messageContainer}>
         {messages.map((message: any, index: React.Key | null | undefined) => (
@@ -162,18 +203,16 @@ const ChatScreen = () => {
             ]}
           >
             {message.worker && renderProfileItem({ item: message.worker })}
-            <Text style={styles.messageText}>{message.message_text}</Text>
+            <Text style={message?.sended_by_user === true ? styles.messageText : styles.otherMessageText}>{message.message_text}</Text>
           </View>
         ))}
         {loading && (
           <View style={styles.loadingBubble}>
-            <AnimatedCircularProgress
-              size={20}
-              width={2}
-              fill={100}
-              tintColor="#008000"
-              backgroundColor="#E0E0E0"
-            />
+            <View style={styles.loadingContainer}>
+              <Animated.View style={[styles.loadingCircle, { transform: [{ rotate: spin }] }]}>
+                <View style={styles.loadingSquare} />
+              </Animated.View>
+            </View>
           </View>
         )}
       </View>
@@ -202,6 +241,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#D4F1E3',
+    width : '100%'
   },
   greenCircle: {
     width: 100,
@@ -221,17 +261,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 10,
-    marginVertical: 5,
+    marginVertical: 2,
   },
-  loadingBubble: {
-    alignSelf: 'flex-end',
-    marginVertical: 5,
-    padding: 10,
-  },
+  
   messageText: {
     fontSize: 16,
     color: '#000000',
   },
+
+  otherMessageText: {
+    fontSize: 16,
+    color: '#fff',
+  },
+
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -252,11 +294,12 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     backgroundColor: '#FFEB3B',
-    alignSelf: 'flex-end',
+    alignSelf: 'flex-start',
   },
   otherMessage: {
-    backgroundColor: '#E0E0E0',
-    alignSelf: 'flex-start',
+    backgroundColor: '#000',
+    
+    alignSelf: 'flex-end',
   },
   sendButton: {
     marginLeft: 10,
@@ -350,6 +393,49 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+
+  loadingBubble: {
+    alignSelf: 'flex-end', // Aligner à droite
+    marginVertical: 5,
+    padding: 10,
+  },
+  
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  loadingCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#000', // Cercle foncé
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    
+  },
+  
+  loadingSquare: {
+    width: 10,
+    height: 10,
+    backgroundColor: '#fff', // Carré noir au centre
+  },
+  
+  animatedLoading: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: 'rgba(0, 128, 0, 0.5)', // Vert avec transparence
+    borderTopColor: 'transparent',
+    animation: 'spin 1s linear infinite', // Rotation infinie
+  },
+  scrollContainer : {
+    
+    width : '100%'
+  }
 });
 
 export default ChatScreen;

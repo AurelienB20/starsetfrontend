@@ -2,16 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ImageBackground, GestureResponderEvent, ScrollView, FlatList,ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-
 import { StyleSheet, TextStyle, Image } from 'react-native';
 import { Ionicons,MaterialIcons } from '@expo/vector-icons';
 import config from '../../config.json';
-import * as Font from 'expo-font';
-import { useFonts, BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 
+import { useFonts } from 'expo-font';
+import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
+import { Lexend_400Regular, Lexend_700Bold } from '@expo-google-fonts/lexend';
 import AppLoading from 'expo-app-loading';
 //import axios from '../api/axios';
-
 
 const profilePictures = [
   "https://www.utopix.com/fr/blog/wp-content/uploads/2024/04/Mzk0NGJkOWEtY2ZlYS00MjVjLTkwNTAtOGY5OWQzN2IzNGVi_762cec57-2eaf-4eaf-9a0d-2e7860147e48_profilhomme7-scaled.jpg",
@@ -24,7 +23,26 @@ const profilePictures = [
   "https://www.utopix.com/fr/blog/wp-content/uploads/2024/04/Y2E4OTI3NzQtNmUyOC00YmU2LWE5ZjctODcxY2RlMzg2ZDIy_26dfc43e-31dd-463f-ad04-56f39a430691_profilhomme1-scaled.jpg"
 ];
 
+const metiers = [
+  { name: 'Coiffure', image: 'https://cdn-icons-png.flaticon.com/512/773/773179.png' },
+  { name: 'Pestitting', image: 'https://cdn-icons-png.flaticon.com/512/194/194279.png' },
+  { name: 'Manucure', image: 'https://cdn-icons-png.flaticon.com/512/96/96514.png' },
+  { name: 'Plomberie', image: 'https://cdn-icons-png.flaticon.com/512/312/312971.png' },
+  { name: 'Électricité', image: 'https://cdn-icons-png.flaticon.com/512/550/550264.png' },
+  { name: 'Jardinage', image: 'https://cdn-icons-png.flaticon.com/512/1518/1518965.png' }
+];
+
+const users = [
+  { username: '@AMELIE1234', image: 'https://media.istockphoto.com/id/1487069717/fr/photo/une-belle-femme-heureuse-qui-envoie-des-sms-sur-son-t%C3%A9l%C3%A9phone-portable-pendant-relaxi.jpg?s=612x612&w=0&k=20&c=m7ZQ8pfJbSCFgViu2314rKxz1oMz9RWcZ2jKjq6nXq8=' },
+  { username: '@ELISEE1234', image: 'https://media.istockphoto.com/id/1430670068/fr/photo/m%C3%A9dias-sociaux-saisie-de-la-femme-et-du-t%C3%A9l%C3%A9phone-profil-de-rencontre-et-smartphone-sur-le.jpg?s=612x612&w=0&k=20&c=E2mLPPtGW0FTzMFGshsAzONL1fHpYjyJqRahv5WPCbM=' },
+  { username: '@MELLL1234', image: 'https://www.shutterstock.com/shutterstock/videos/1105351553/thumb/10.jpg?ip=x480' },
+  { username: '@NICK2233', image: 'https://www.foodlovers.ch/sites/default/files/2023-02/Un_espresso_s_il_vous-plait.png' },
+  { username: '@JESSICA2512', image: 'https://media.istockphoto.com/id/1487069717/fr/photo/une-belle-femme-heureuse-qui-envoie-des-sms-sur-son-t%C3%A9l%C3%A9phone-portable-pendant-relaxi.jpg?s=612x612&w=0&k=20&c=m7ZQ8pfJbSCFgViu2314rKxz1oMz9RWcZ2jKjq6nXq8=' },
+  { username: '@JACK1234', image: 'https://img.freepik.com/photos-premium/jeune-homme-barbe-detendu-dans-parasol-plage_79295-1720.jpg' }
+];
+
 const SearchScreen = () => {
+  const [loadingMore, setLoadingMore] = useState(false);
   const navigation = useNavigation()
   const [prestations, setPrestations] = useState([]);
   const [workers, setWorkers] = useState([]);
@@ -32,10 +50,10 @@ const SearchScreen = () => {
     BebasNeue: BebasNeue_400Regular,
   });
 
-  
-
-  
-  
+  const handleEndReached = () => {
+    setLoadingMore(true);
+    setTimeout(() => setLoadingMore(false), 1500); // Simulation d'attente
+  };
 
   const goToProfile = async () => {
     navigation.navigate('profile' as never)
@@ -112,7 +130,7 @@ const SearchScreen = () => {
           
           <View>
             <Text style={styles.profileName}>{item.firstname}</Text>
-            <Text style={styles.pseudo}>{item.pseudo}</Text>
+            <Text style={styles.pseudo}>@{item.pseudo}</Text>
           </View>
           <View style={styles.ratingContainer}>
           {[...Array(5)].map((_, index) => (
@@ -120,9 +138,12 @@ const SearchScreen = () => {
           ))}
         </View>
       </View>
+      <View style={styles.profileDescriptionContainer}>
         <Text style={styles.profileDescription}>
           {item.description}
         </Text>
+      </View>
+        
         <View style={styles.profileCategories}>
           {item.metiers.slice(0, 3).map((metier: any, index: any) => (
             <View key={index} style={styles.categoryBadge}>
@@ -138,6 +159,23 @@ const SearchScreen = () => {
     </TouchableOpacity>
   );
   
+  const renderMetierItem = ({ item } : any) => (
+    <TouchableOpacity style={styles.metierContainer}>
+      
+      <Image source={{ uri: item.image }} style={styles.metierImage} />
+      <Text style={styles.metierText}>{item.name}</Text>
+      
+    </TouchableOpacity>
+  );
+
+  const renderUserItem = ({ item } : any) => (
+    <View style={styles.userContainer}>
+      <Image source={{ uri: item.image }} style={styles.userImage} />
+      <View style={styles.usernameContainer}>
+        <Text style={styles.username}>{item.username}</Text>
+      </View>
+    </View>
+  );
 
   // Utiliser useEffect pour charger les prestations lors du montage du composant
   useEffect(() => {
@@ -145,53 +183,60 @@ const SearchScreen = () => {
     getWorkers();
   }, []);
 
-  if (!fontsLoaded) {
+  /*if (!fontsLoaded) {
     return (
       <View >
         
       </View>
     );
-  }
+  }*/
   
-
   return (
-    <ScrollView style={styles.scrollContainer}>
-    <View style={styles.container}>
-      
-
-      
-      <Text style={styles.headerText}>Star Set</Text>
-      <FlatList
-        data={prestations} 
-        horizontal
-        keyExtractor={(item, index) => index.toString()} // Générer une clé unique
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.profileContainerFlatList} // Nouveau style pour aligner à gauche
-        renderItem={({ item,index }) => (
-          <TouchableOpacity onPress={() => goToPrestationView(item)}>
-            <View style={styles.workerContainer}>
-            <Image
-              source={{ uri: profilePictures[index % profilePictures.length] }} // Sélection cyclique des images
-              style={styles.profilePicture}
-            />
-              <Image source={require('../../assets/images/valide_or.png')} style={styles.statusIndicator} />
-            </View>
-          </TouchableOpacity>
-        )}
-      />
-      <Text style={styles.sectionHeader}>Ce qui pourrait vous plaire</Text>
-      <FlatList
-          data={workers}
-          renderItem={renderProfileItem}
-          keyExtractor={(item: any) => item.worker_id}
-          nestedScrollEnabled={true} // Permet de gérer les défilements imbriqués
-        />
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Voir Plus</Text>
-      </TouchableOpacity>
-      
-    </View>
-    </ScrollView>
+    <FlatList
+      data={workers}
+      renderItem={renderProfileItem}
+      keyExtractor={(item : any) => item.worker_id.toString()}
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={0.5}
+      ListHeaderComponent={
+        <View style={styles.container}>
+          <Text style={styles.headerText}>Star Set</Text>
+          <FlatList
+            data={prestations}
+            horizontal
+            keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.profileContainerFlatList}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity onPress={() => goToPrestationView(item)}>
+                <View style={styles.workerContainer}>
+                  <Image source={{ uri: profilePictures[index % profilePictures?.length] }} style={styles.profilePicture} />
+                  <Image source={require('../../assets/images/valide_or.png')} style={styles.statusIndicator} />
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+          <FlatList
+            data={metiers}
+            horizontal
+            keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
+            renderItem={renderMetierItem}
+            contentContainerStyle={styles.metierList}
+          />
+          <FlatList
+            data={users}
+            horizontal
+            keyExtractor={(item, index) => index.toString()}
+            showsHorizontalScrollIndicator={false}
+            renderItem={renderUserItem}
+            contentContainerStyle={styles.userList}
+          />
+          <Text style={styles.sectionHeader}>Ce qui pourrait vous plaire</Text>
+        </View>
+      }
+      ListFooterComponent={loadingMore ? <ActivityIndicator size="large" color="#00cc66" style={styles.loader} /> : null}
+    />
   );
 };
 
@@ -212,11 +257,11 @@ const styles = StyleSheet.create({
   },
 
   headerText: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 20,
-    marginHorizontal: 20, 
+    marginTop: 30, 
     paddingHorizontal : 20,
   },
   stepContainer: {
@@ -311,16 +356,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e0e0e0',
     marginHorizontal : 10,
-    width : '70%'
+    width : '70%',
+    
+
   },
+  
   profileImage: {
     width: 80,
     height: 80,
     borderRadius: 20,
     marginRight: 10,
-    paddingHorizontal : 20
+    
   },
   profileInfo: {
+    
+    width : '100%'
   },
   profileName: {
     fontSize: 16,
@@ -339,6 +389,10 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     textAlign : 'center',
     fontFamily: 'BebasNeue',
+  },
+
+  profileDescriptionContainer: {
+    marginVertical : 5
   },
 
   profileCategories: {
@@ -363,6 +417,7 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     marginTop: 5,
+    
   },
 
   nameAndRating: {
@@ -391,7 +446,69 @@ const styles = StyleSheet.create({
   pseudo: {
     color: '#888',
     fontSize: 14,
-    
+  },
+
+  loader: {
+    marginVertical: 20,
+  },
+
+  metierList: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    paddingBottom : 20
+  },
+
+  metierContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'gold',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginRight: 15,
+  },
+  
+  metierImage: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 10,
+  },
+
+  metierText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginRight : 10
+  },
+
+  userList: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+  },
+  userContainer: {
+    position: 'relative',
+    marginRight: 15,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  userImage: {
+    width: 250,
+    height: 150,
+    borderRadius: 10,
+  },
+  usernameContainer: {
+    position: 'absolute',
+    bottom: 5,
+    left: 5,
+    backgroundColor: 'rgba(0, 150, 0, 0.8)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  username: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 

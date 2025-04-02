@@ -53,7 +53,7 @@ const ModifyAccountScreen = () => {
         <Image source={{ uri: profilePictureUrl }} style={styles.profilePicture} />
       </TouchableOpacity>
       
-      <InfoRow label="Pseudo" value={user?.pseudo || 'Ajouter un pseudo'} onPress={() => {navigation.navigate('modifyPseudo' as never)}} />
+      <InfoRow label="Pseudo" value={user?.pseudo ? `@${user.pseudo}` : 'Ajouter un pseudo'} onPress={() => {navigation.navigate('modifyPseudo' as never)}} />
       <InfoRow label="Nom et prénom" value={`${user?.firstname} ${user?.lastname}`} onPress={() => {navigation.navigate('modifyName' as never)}} />
       <InfoRow label="Téléphone" value={phone} onPress={() => {}} />
       <InfoRow label="E-mail" value={user?.email} onPress={() => {navigation.navigate('modifyEmail' as never)}} />

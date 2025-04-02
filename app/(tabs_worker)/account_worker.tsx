@@ -21,8 +21,11 @@ const AccountWorkerScreen = () => {
       name: '(tabs)',
       params: { screen: 'account' },
     } as never);
-    
   }
+
+  const goToProfilePicture = async () => {
+    navigation.navigate('modifyAccount' as never);
+  };
 
   const getAccountId = async () => {
     try {
@@ -73,19 +76,23 @@ const AccountWorkerScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.profileHeader}>
-          <Image
-            source={{ uri: account?.profile_picture_url 
-              ? account?.profile_picture_url
-              : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png'  }} // Replace with actual URL
-            style={styles.profilePicture}
-          />
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user?.firstname} {user?.lastname}</Text>
-            <Text style={styles.profileHandle}>@{user?.pseudo}</Text>
-          </View>
-          
-        </View>
+        <TouchableOpacity style={styles.profileHeader} onPress={goToProfilePicture}>
+                  <View >
+                  <Image
+                    source={{ 
+                      uri: account?.profile_picture_url 
+                        ? account?.profile_picture_url
+                        : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png' 
+                    }} 
+                    style={styles.profilePicture}
+                  />
+                  </View>
+                  
+                  <View style={styles.profileInfo}>
+                    <Text style={styles.profileName}>{account?.firstname} {account?.lastname}</Text>
+                    <Text style={styles.profileHandle}>@{account?.pseudo}</Text>
+                  </View>
+                </TouchableOpacity>
         <View style={styles.rightHeader}>
           <Text style={styles.typeOAccount}>Worker</Text>
           
@@ -132,6 +139,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 20,
+    marginTop : 40
   },
   profileHeader: {
     flexDirection: 'row',

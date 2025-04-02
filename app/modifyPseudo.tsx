@@ -68,11 +68,15 @@ const ModifyPseudoScreen = () => {
       {/* 🔥 CONTENU PRINCIPAL */}
       <View style={styles.content}>
         <Text style={styles.label}>Pseudo</Text>
-        <TextInput
-          style={styles.input}
-          value={pseudo}
-          onChangeText={setPseudo}
-        />
+        <View style={styles.inputWrapper}>
+          <Text style={styles.atSymbol}>@</Text>
+          <TextInput
+            style={styles.input}
+            value={pseudo}
+            onChangeText={setPseudo}
+            autoCapitalize="none"
+          />
+        </View>
 
         <TouchableOpacity style={styles.confirmButton} onPress={confirmUpdate}>
           <Text style={styles.buttonText}>Confirmer</Text>
@@ -130,16 +134,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: 'black',
   },
-  input: {
-    height: 50,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    fontSize: 16,
-    backgroundColor: 'white',
-    marginBottom: 20,
-  },
   confirmButton: {
     marginTop: 20,
     backgroundColor: '#70FF70',
@@ -151,6 +145,30 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: 'black',
+  },
+
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    backgroundColor: 'white',
+    height: 50,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  
+  atSymbol: {
+    fontSize: 16,
+    color: '#888',
+    
+  },
+  
+  input: {
+    flex: 1,
+    fontSize: 16,
     color: 'black',
   },
 });

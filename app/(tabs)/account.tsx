@@ -40,8 +40,8 @@ const AccountScreen = () => {
     navigation.navigate('paymentMethod' as never);
   };
 
-  const goToSelectFields = async () => {
-    navigation.navigate('selectFields' as never);
+  const goToTestImage = async () => {
+    navigation.navigate('testImage' as never);
   };
 
   const goToProfilePicture = async () => {
@@ -50,6 +50,10 @@ const AccountScreen = () => {
 
   const goToGetLocation = async () => {
     navigation.navigate('getLocation' as never);
+  };
+
+  const goToDocument = async () => {
+    navigation.navigate('document' as never);
   };
 
   const getAccountId = async () => {
@@ -185,8 +189,8 @@ const AccountScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.profileHeader}>
-          <TouchableOpacity  onPress={goToProfilePicture}>
+        <TouchableOpacity style={styles.profileHeader} onPress={goToProfilePicture}>
+          <View >
           <Image
             source={{ 
               uri: account?.profile_picture_url 
@@ -195,13 +199,13 @@ const AccountScreen = () => {
             }} 
             style={styles.profilePicture}
           />
-          </TouchableOpacity>
+          </View>
           
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{account?.firstname} {account?.lastname}</Text>
             <Text style={styles.profileHandle}>@{account?.pseudo}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
         <View style={styles.rightHeader}>
           <Text style={styles.typeOAccount}>User</Text>
         </View>
@@ -234,8 +238,8 @@ const AccountScreen = () => {
       <TouchableOpacity style={styles.menuItem}>
         <Text style={styles.menuItemText}>À propos</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToSelectFields}>
-        <Text style={styles.menuItemText}>Select Fields</Text>
+      <TouchableOpacity style={styles.menuItem} onPress={goToDocument}>
+        <Text style={styles.menuItemText}>Document</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem}>
         <Text style={styles.menuItemText} onPress={openHistoryModal}>Historique</Text>

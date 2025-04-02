@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../../config.json';
+import { useAllWorkerPrestation } from '@/context/userContext';
+
 
 const JobsScreen = () => {
   const navigation = useNavigation();
@@ -15,7 +17,7 @@ const JobsScreen = () => {
   const [isInProgressModalVisible, setInProgressModalVisible] = useState(false); // Popup "En Cours"
   const [workerPlannedPrestations, setWorkerPlannedPrestations] = useState<any[]>([]);
   const [isWorkerRequestModalVisible, setWorkerRequestModalVisible] = useState(false); // Modal qui affiche les missions planifiées du worker
-
+  const { allWorkerPrestation, setAllWorkerPrestation } = useAllWorkerPrestation();
 
   const handleJobSelection = (jobTitle : any) => {
     setSelectedJob(jobTitle);
@@ -55,6 +57,7 @@ const JobsScreen = () => {
 
       const data = await response.json();
       setPrestations(data.prestations);
+      setAllWorkerPrestation(data.prestations);
     } catch (error) {
       console.error('Une erreur est survenue lors de la récupération des prestations:', error);
     }
@@ -189,7 +192,7 @@ const JobsScreen = () => {
         <Text style={styles.missionText}>Demande de missions : 1</Text>
       </TouchableOpacity>
 
-      {prestations.map((prestation : any, index) => (
+      {Array.isArray(allWorkerPrestation) && allWorkerPrestation.map((prestation: any, index: number) => (
         <TouchableOpacity 
           key={index} 
           style={styles.jobCard}
@@ -369,9 +372,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 'bold',
-    fontSize: 30,
+    fontSize: 40,
     textAlign: 'center',
-    marginVertical: 20,
+    marginBottom: 20,
   },
   searchInput: {
     height: 40,

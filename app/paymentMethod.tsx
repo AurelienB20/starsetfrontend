@@ -87,7 +87,10 @@ const PaymentMethodScreen = () => {
             <CardField
               postalCodeEnabled={true}
               placeholders={{ number: '4242 4242 4242 4242' }}
-              onCardChange={(cardDetails) => setCardDetails(cardDetails)}
+              onCardChange={(cardDetails) => {
+                console.log("📦 Changement dans le champ carte:", cardDetails);
+                setCardDetails(cardDetails);
+              }}
               style={styles.cardField}
             />
             <TouchableOpacity style={styles.saveButton} onPress={handleAddCard}>

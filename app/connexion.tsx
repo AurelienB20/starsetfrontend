@@ -29,7 +29,7 @@ const ConnexionScreen = () => {
     navigation.navigate('creation' as never)
   };
 
-  
+  const goToForgotPassword = () => navigation.navigate('forgotPassword' as never);
 
   const getProfile = async (accountId :any) => {
     try {
@@ -114,10 +114,11 @@ const ConnexionScreen = () => {
       <View style={styles.logoContainer}></View>
 
       <Text style={styles.enter}>Connectez vous !</Text>
-      <View style={styles.separator}></View>
+      
       <Text style={styles.description}>
         Laissez-nous identifier votre profil, Star Set n'attend plus que vous !
       </Text>
+      <View style={styles.separator}></View>
 
       <TextInput
         style={styles.input}
@@ -125,13 +126,19 @@ const ConnexionScreen = () => {
         placeholder="chapter@exemple.com"
         placeholderTextColor="#808080"
       />
-      <TextInput
-        style={styles.input}
-        onChangeText={handlePasswordChange}
-        placeholder="mot de passe"
-        placeholderTextColor="#808080"
-        secureTextEntry={true}
-      />
+      
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={[styles.input, { width: '100%' }]}
+          onChangeText={handlePasswordChange}
+          placeholder="Mot de passe"
+          placeholderTextColor="#808080"
+          secureTextEntry={true}
+        />
+        <TouchableOpacity onPress={goToForgotPassword} style={styles.forgotPassword}>
+          <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.spacer}></View>
       {errorMessage ? (
@@ -139,14 +146,15 @@ const ConnexionScreen = () => {
       ) : null}
       <TouchableOpacity
         onPress={handleSubmit}
-        style={[styles.connexionbutton, !isFormValid && { backgroundColor: 'gray' }]}
+        style={[styles.connexionbutton]}
         disabled={!isFormValid}
       >
         <Text style={styles.buttonText}>Connexion</Text>
       </TouchableOpacity>
+      
       <TouchableOpacity onPress={goToCreate}>
-        <Text style={styles.createAccount}>
-          Créer un compte
+        <Text >
+          Vous n'avez pas encore de compte ? <Text style={styles.createAccount}>inscrivez-vous !</Text>
         </Text>
       </TouchableOpacity>
       
@@ -168,7 +176,7 @@ const styles = StyleSheet.create({
     height: 100,
     backgroundColor: "#A0A0FF",
     borderRadius: 50,
-    marginBottom: 70,
+    marginBottom: 100,
     top: 80,
   },
   separator: {
@@ -180,12 +188,16 @@ const styles = StyleSheet.create({
   },
   spacer: {
     width: '100%',
-    height: 120,
+    height: 30,
   },
+
   buttonText: {
     fontSize: 20,
     fontWeight: 'bold',
+    color : 'white',
+    fontFamily : 'Lexend'
   },
+
   errorText: {
     color: 'red',
     fontSize: 16,
@@ -205,7 +217,7 @@ const styles = StyleSheet.create({
     color : 'black'
 },
 description: {
-  marginTop: 20,
+  
   fontSize: 13,
   textAlign: "center",
   color : 'black',
@@ -214,14 +226,15 @@ description: {
 },
 
 createAccount : {
-  color : 'blue'
+  color : '#7ED957'
 },
 input: {
   fontFamily: "Outfit",
-  width: "80%", // Utilisation de pourcentage pour la largeur
-  maxWidth: 450, // Nombre pour maxWidth
+  width: "80%", // Utilisation de pourcentage pour la largeur,
+  height : 46,
+  //maxWidth: 450, // Nombre pour maxWidth
   backgroundColor: "white",
-  borderRadius: 15, // Nombre pour borderRadius
+  borderRadius: 23, // Nombre pour borderRadius
   borderWidth: 2, // Utilisation de borderWidth
   borderColor: "black", // Utilisation de borderColor
   color: "black",
@@ -235,15 +248,30 @@ input: {
 },
 
 connexionbutton: {
-  width: "80%", // Utilisation de pourcentage pour la largeur
+  width: "70%", // Utilisation de pourcentage pour la largeur
   maxWidth: 400, // Nombre pour maxWidth
   height: 50,
-  backgroundColor: "#70FF70",
+  backgroundColor: "#00BF63",
   justifyContent: "center",
   alignItems: "center",
   marginVertical: 10,
-  borderRadius: 25,
+  borderRadius: 10,
   marginHorizontal: 10,
+},
+
+passwordContainer: {
+  width: '80%',
+  maxWidth: 450,
+  alignItems: 'center',
+},
+forgotPassword: {
+  marginTop: 5,
+  alignSelf : 'flex-end'
+},
+forgotPasswordText: {
+  color: 'blue',
+  fontSize: 12,
+  textAlign : 'right'
 },
 
 });

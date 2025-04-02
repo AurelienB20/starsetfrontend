@@ -7,6 +7,10 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'avoir installé cette bibliothèque
 import config from '../config.json';
 import * as ImagePicker from 'expo-image-picker';
+import { useAllWorkerPrestation }  from '@/context/userContext';
+import { Calendar } from 'react-native-calendars';
+import moment from 'moment'; // Si tu veux formater joliment
+
 
 import {
   getPrestation,
@@ -41,6 +45,8 @@ const PrestationScreen = () => {
   const [certificationImage, setCertificationImage] = useState<any>(null);
   const [isImageModalVisible, setImageModalVisible] = useState(false); // Contrôle de la visibilité du modal
   const [selectedImage, setSelectedImage] = useState(null); // Image sélectionnée
+  const { allWorkerPrestation, setAllWorkerPrestation } = useAllWorkerPrestation();
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const route = useRoute() as any;
   const prestation_id = route.params?.id;
@@ -70,6 +76,28 @@ const PrestationScreen = () => {
     } catch (e) {
       console.error('Erreur lors de la récupération du type de compte', e);
     }
+  };
+
+  const toggleCalendar = () => {
+    setShowCalendar(!showCalendar);
+  };
+
+  const handleDateSelect = (day: any) => {
+    const formatted = moment(day.dateString).format('DD/MM/YYYY');
+    setCertificationDate(formatted);
+    setShowCalendar(false);
+  };
+
+  const getMarkedDates = () => {
+    if (!certificationDate) return {};
+  
+    const dateISO = moment(certificationDate, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    return {
+      [dateISO]: {
+        selected: true,
+        selectedColor: '#00cc66',
+      },
+    };
   };
 
   const handleDeletePhoto = async (index : any) => {
@@ -427,6 +455,14 @@ const PrestationScreen = () => {
         ...prevPrestation,
         published: !prevPrestation.published,
       }));
+
+      setAllWorkerPrestation((prev: any[]) =>
+        prev.map(prestation =>
+          prestation.id === prestation_id
+            ? { ...prestation, published: !prestation.published }
+            : prestation
+        )
+      );
     } catch (error) {
       console.error('Une erreur est survenue lors de la mise à jour de la publication:', error);
     }
@@ -756,12 +792,14 @@ const PrestationScreen = () => {
               value={certificationInstitution}
               onChangeText={setCertificationInstitution}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Date"
-              value={certificationDate}
-              onChangeText={setCertificationDate}
-            />
+            <TouchableOpacity
+              
+              onPress={() => setShowCalendar(true)}
+            >
+              <Text style={styles.input}>
+                {certificationDate || 'Sélectionnez une date'}
+              </Text>
+            </TouchableOpacity>
             <TextInput
               style={styles.input}
               placeholder="Description"
@@ -823,6 +861,33 @@ const PrestationScreen = () => {
               <Image source={{ uri: selectedImage }} style={styles.fullScreenImage} />
             )}
           </TouchableOpacity>
+        </View>
+      </Modal>
+      
+<Modal
+        animationType="slide"
+        transparent={true}
+        visible={showCalendar}
+        onRequestClose={toggleCalendar}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {/* Petite croix pour fermer le modal */}
+            <TouchableOpacity onPress={toggleCalendar} style={styles.closeIcon}>
+              <Icon name="close" size={24} color="#000" />
+            </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>Choisissez une date</Text>
+            <Calendar
+              onDayPress={handleDateSelect}
+              
+              markedDates={getMarkedDates()}
+              style={styles.calendar}
+            />
+
+            {/* Bouton Horaires */}
+           
+          </View>
         </View>
       </Modal>
     </ScrollView>
@@ -1282,6 +1347,36 @@ const styles = StyleSheet.create({
 
   unpublishButton: {
     backgroundColor: '#cc0000', // Rouge
+  },
+
+  calendar: {
+    marginBottom: 10,
+  },
+
+  closeIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 5,
+  },
+  horairesButton: {
+    marginTop: 20,
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#00cc66', // Couleur du bouton Horaires
+    width: '100%',
+    alignItems: 'center',
+  },
+  horairesButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+
+  timePickerModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   
 });
