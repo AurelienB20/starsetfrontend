@@ -1,6 +1,6 @@
 import 'react-native-get-random-values';
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import config from '../config.json';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '@/context/userContext';
@@ -11,8 +11,38 @@ const ModifyPseudoScreen = () => {
   const { user, setUser } = useUser(); // Contexte utilisateur
 
   const [pseudo, setPseudo] = useState(user?.pseudo || '');
+  const [pseudoError, setPseudoError] = useState(''); // État pour gérer l'erreur de pseudo
 
+  // Vérification de la disponibilité du pseudo
+  const checkPseudoAvailability = async (pseudo: string) => {
+    try {
+      const response = await fetch(`${config.backendUrl}/api/auth/check-pseudo-availability`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pseudo }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la vérification du pseudo');
+      }
+
+      const data = await response.json();
+      return data.isAvailable; // On suppose que le backend renvoie un objet avec une clé `isAvailable` qui est un booléen
+    } catch (error) {
+      console.error('Erreur lors de la vérification du pseudo:', error);
+      return false; // Si l'appel échoue, on considère que le pseudo n'est pas disponible
+    }
+  };
+
+  // Mise à jour du pseudo après vérification
   const updatePseudo = async () => {
+    const isAvailable = true//await checkPseudoAvailability(pseudo);
+
+    if (!isAvailable) {
+      setPseudoError('Ce pseudo est déjà pris. Veuillez en choisir un autre.');
+      return; // Ne pas continuer si le pseudo est déjà pris
+    }
+
     try {
       const updatedUser = { ...user, pseudo };
       setUser(updatedUser);
@@ -22,10 +52,13 @@ const ModifyPseudoScreen = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ account: updatedUser }),
       });
+      
       if (!response.ok) throw new Error('Erreur de réseau');
       
       const data = await response.json();
       console.log('Mise à jour réussie:', data);
+      Alert.alert("Succès", "Le pseudo a été mis à jour avec succès!");
+      setPseudoError(''); // Réinitialiser l'erreur après une mise à jour réussie
     } catch (error) {
       console.error('Erreur lors de la mise à jour du pseudo:', error);
     }
@@ -44,8 +77,6 @@ const ModifyPseudoScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-back" size={30} color="black" />
         </TouchableOpacity>
-
-        
 
         {/* Icônes à droite */}
         <View style={styles.headerIcons}>
@@ -77,6 +108,11 @@ const ModifyPseudoScreen = () => {
             autoCapitalize="none"
           />
         </View>
+
+        {/* Affichage de l'erreur sous l'input si le pseudo est déjà pris */}
+        {pseudoError ? (
+          <Text style={styles.errorText}>{pseudoError}</Text>
+        ) : null}
 
         <TouchableOpacity style={styles.confirmButton} onPress={confirmUpdate}>
           <Text style={styles.buttonText}>Confirmer</Text>
@@ -163,13 +199,19 @@ const styles = StyleSheet.create({
   atSymbol: {
     fontSize: 16,
     color: '#888',
-    
   },
   
   input: {
     flex: 1,
     fontSize: 16,
     color: 'black',
+  },
+
+  // Style pour le message d'erreur
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
   },
 });
 

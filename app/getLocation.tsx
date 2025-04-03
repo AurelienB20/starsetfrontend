@@ -5,7 +5,6 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
 import config from '../config.json'; // Assurez-vous que votre clé API est stockée ici
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-
 const LocationPickerScreen = () => {
   const [address, setAddress] = useState('');
   const [coordinates, setCoordinates] = useState<any>(null);

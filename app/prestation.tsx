@@ -7,7 +7,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'avoir installé cette bibliothèque
 import config from '../config.json';
 import * as ImagePicker from 'expo-image-picker';
-import { useAllWorkerPrestation }  from '@/context/userContext';
+import { useAllWorkerPrestation, useCurrentWorkerPrestation }  from '@/context/userContext';
 import { Calendar } from 'react-native-calendars';
 import moment from 'moment'; // Si tu veux formater joliment
 
@@ -26,7 +26,10 @@ const PrestationScreen = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [prestationPhotos, setPrestationPhotos] = useState<any>([])
   const [uploading, setUploading] = useState<boolean>(false);
-  const [prestation, setPrestation] = useState<any>({});
+
+  //const [prestation, setPrestation] = useState<any>({});
+  const { currentWorkerPrestation: prestation, setCurrentWorkerPrestation } = useCurrentWorkerPrestation();
+
   const [experiences, setExperiences] = useState([])
   const [isPopupVisible, setIsPopupVisible] = useState(false); // État pour gérer la visibilité du popup
 
@@ -34,7 +37,7 @@ const PrestationScreen = () => {
   const [date, setDate] = useState('');
   const [experienceDescription, setExperienceDescription] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
-  const [remuneration, setRemuneration] = useState(prestation.remuneration || ''); // Assurez-vous que prestation.remuneration est disponible
+  const [remuneration, setRemuneration] = useState(prestation?.remuneration || ''); // Assurez-vous que prestation.remuneration est disponible
 
   const [certifications, setCertifications] = useState<any>([]);
   const [isCertificationFormVisible, setCertificationFormVisible] = useState(false);
@@ -193,7 +196,7 @@ const PrestationScreen = () => {
           data: base64Data,   // Base64 ou blob
         };
         
-        const object_id=prestation.id
+        const object_id=prestation?.id
         const type_object = 'prestation'
 
         // Envoyer l'image au serveur
@@ -415,7 +418,7 @@ const PrestationScreen = () => {
   };
 
   const confirmTogglePrestationPublished = () => {
-    const action = prestation.published ? "dépublier" : "publier";
+    const action = prestation?.published ? "dépublier" : "publier";
   
     Alert.alert(
       ``,
@@ -423,7 +426,7 @@ const PrestationScreen = () => {
       [
         { text: "Annuler", style: "cancel" },
         {
-          text: prestation.published ? "Dépublier" : "Publier",
+          text: prestation?.published ? "Dépublier" : "Publier",
           style: "destructive",
           onPress: togglePrestationPublished, // Appelle la fonction qui gère la publication
         },
@@ -451,7 +454,7 @@ const PrestationScreen = () => {
       console.log('Mise à jour de la publication :', data);
   
       // Mettre à jour l'état de la prestation en inversant la valeur de published
-      setPrestation((prevPrestation : any) => ({
+      setCurrentWorkerPrestation((prevPrestation : any) => ({
         ...prevPrestation,
         published: !prevPrestation.published,
       }));
@@ -467,11 +470,18 @@ const PrestationScreen = () => {
       console.error('Une erreur est survenue lors de la mise à jour de la publication:', error);
     }
   };
+
+  const handleEditDescription = () => {
+    navigation.navigate({
+      name: 'modifyPrestationDescription',
+      params: {id : prestation_id},
+    } as never);
+  };
   
 
   useEffect(() => {
     getPrestation(prestation_id).then(data => {
-      setPrestation(data.prestation);
+      setCurrentWorkerPrestation(data.prestation);
       setPrestationPhotos(data.images);
       setRemuneration(data.prestation.remuneration);
     }).catch(error => console.error(error));
@@ -502,7 +512,7 @@ const PrestationScreen = () => {
   }, [navigation]);
 
   useEffect(() => {
-    if (prestation.description) {
+    if (prestation?.description) {
       console.log(prestation)
       setDescription(prestation.description as any);
     }
@@ -513,8 +523,15 @@ const PrestationScreen = () => {
       <View style={styles.iconContainer}>
         <FontAwesome name="child" size={60} color="black" />
       </View>
-      <Text style={styles.title}>{prestation.metier}</Text>
+      <Text style={styles.title}>{prestation?.metier}</Text>
       <View style={styles.widthMax}>
+      <TouchableOpacity style={styles.descriptionRow} onPress={handleEditDescription}>
+          <View>
+            <Text style={styles.infoLabel}>description</Text>
+            <Text style={styles.infoValue}>{prestation?.description}</Text>
+          </View>
+          <MaterialIcons name="keyboard-arrow-right" size={24} color="black" />
+        </TouchableOpacity>
       {isEditing ? (
         <>
           <TextInput
@@ -541,9 +558,9 @@ const PrestationScreen = () => {
       <Text style={styles.characterCount}>{maxDescriptionLength - description.length} caractères</Text>
 
       <View style={styles.remunerationContainer}>
-        {prestation.remuneration ? (
+        {prestation?.remuneration ? (
           <>
-            <Text style={styles.remunerationText}>Rémunération : {prestation.remuneration} €</Text>
+            <Text style={styles.remunerationText}>Rémunération : {prestation?.remuneration} €</Text>
             <TouchableOpacity style={styles.modifyButton} onPress={() => setModalVisible(true)}>
               <Text style={styles.modifyButtonText}>Modifier rémunération</Text>
             </TouchableOpacity>
@@ -840,12 +857,12 @@ const PrestationScreen = () => {
         <TouchableOpacity
             style={[
             styles.publishButton,
-            prestation.published ? styles.unpublishButton : styles.publishButton,
+            prestation?.published ? styles.unpublishButton : styles.publishButton,
             ]}
             onPress={confirmTogglePrestationPublished}
         >
             <Text style={styles.publishButtonText}>
-            {prestation.published ? "Retirer" : "Publier"}
+            {prestation?.published ? "Retirer" : "Publier"}
             </Text>
         </TouchableOpacity>
         </View>
@@ -1378,6 +1395,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+
+  descriptionRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    width: '100%', 
+    paddingVertical: 15, 
+    borderBottomWidth: 1, 
+    borderTopWidth: 1, 
+    borderBottomColor: '#E0E0E0',
+    borderTopColor: '#E0E0E0'  
+  },
+
+  infoLabel: { 
+    fontWeight: 'bold', 
+    fontSize: 16 
+  },
+
+  infoValue: { 
+    fontSize: 16, 
+    color: '#000' 
+  },
+  
+  
   
 });
 
