@@ -532,29 +532,7 @@ const PrestationScreen = () => {
           </View>
           <MaterialIcons name="keyboard-arrow-right" size={24} color="black" />
         </TouchableOpacity>
-      {isEditing ? (
-        <>
-          <TextInput
-            style={styles.descriptionInput}
-            placeholder="Description"
-            placeholderTextColor="#808080"
-            value={description}
-            onChangeText= {(text) => setDescription(text)}
-            maxLength= {maxDescriptionLength}
-            multiline= {true}
-          />
-          <TouchableOpacity style={styles.modifyButton} onPress={handleSaveDescription}>
-            <Text style={styles.modifyButtonText}>Valider</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <>
-          <Text style={styles.descriptionText}>{description || "Aucune description disponible"}</Text>
-          <TouchableOpacity style={styles.modifyButton} onPress={handleEditToggle}>
-            <Text style={styles.modifyButtonText}>Modifier</Text>
-          </TouchableOpacity>
-        </>
-      )}
+      
       <Text style={styles.characterCount}>{maxDescriptionLength - description.length} caractères</Text>
 
       <View style={styles.remunerationContainer}>
