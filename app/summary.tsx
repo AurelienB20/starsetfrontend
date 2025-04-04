@@ -4,11 +4,27 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { StyleSheet, TextStyle, Image } from 'react-native';
 import config from '../config.json';
+import { useUser } from '@/context/userContext';
 
+const extractAddressParts = (address : any) => {
+  if (!address) return { street: 'N/A', city: 'N/A', postalCode: 'N/A' };
 
+  const parts = address.split(',');
+  
+  if (parts.length < 3) return { street: 'N/A', city: 'N/A', postalCode: 'N/A' };
+  
+  const street = parts[0]?.trim() || 'N/A';
+  const city = parts[1]?.trim() || 'N/A';
+  const country = parts[2]?.trim() || 'N/A';
+
+  return { street, city, country };
+};
 
 const SummaryScreen = () => {
   const [isSelected, setSelection] = React.useState(false);
+  const {user , setUser} = useUser()
+  const { street, city, country } = extractAddressParts(user?.adress); // Utilisation de la fonction
+
   const route = useRoute() as any;
   route.params
   console.log('ICI')
@@ -41,6 +57,9 @@ const SummaryScreen = () => {
   } else {
     console.log('startDate or endDate is null or undefined');
   }
+
+  
+
   const nextStep = () => {
     
     navigation.navigate({
@@ -90,18 +109,16 @@ const SummaryScreen = () => {
 
         <View style={styles.row}>
           <View style={styles.case}>
-            <Text style={styles.infoText}>19 avenue Charles De Gaulles</Text>
+            <Text style={styles.infoText}>{street}</Text>
           </View>
-          
-          
           <View style={styles.case}>
-            <Text style={styles.infoText}>77420</Text>
+            <Text style={styles.infoText}>{city}</Text>
           </View>
         </View>
         
         <View style={styles.row}>
           <View style={styles.date}>
-            <Text style={styles.infoText}>Lagny-sur-marne</Text>
+            <Text style={styles.infoText}>{country}</Text>
           </View>
         </View>
       </View>

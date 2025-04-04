@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CountryPicker from 'react-native-country-picker-modal'; // Importer la bibliothèque
 import DateTimePicker from '@react-native-community/datetimepicker';
 import config from '../config.json';
 
@@ -12,6 +13,11 @@ const AccountInfoScreen = () => {
   
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const [countryCode, setCountryCode] = useState<any>('FR'); // Code du pays initial, ici la France
+  const [callingCode, setCallingCode] = useState('+33'); // Code du pays initial
+  const [showCountryPicker, setShowCountryPicker] = useState(false); // Afficher ou cacher le picker du pays
+
   const navigation = useNavigation();
   const route = useRoute() as any;
   const { email, password , preferredFields, address, coordinates} = route.params || {};
@@ -53,7 +59,7 @@ const AccountInfoScreen = () => {
       const data = await response.json();
       saveData(data.account);
       if (data.success) {
-        navigation.navigate('chooseAccount' as never);
+        navigation.navigate('verificationCode' as never);
       } else {
         alert(data.message);
       }
@@ -84,6 +90,13 @@ const AccountInfoScreen = () => {
     const newDate = new Date(birthDate);
     newDate.setFullYear(newDate.getFullYear() + years);
     setBirthDate(newDate);
+  };
+
+  // Fonction pour gérer la sélection du pays
+  const onSelectCountry = (country: any) => {
+    setCountryCode(country.cca2); // Code du pays (par exemple, 'FR' pour la France)
+    setCallingCode(country.callingCode[0]); // Indicatif téléphonique
+    setShowCountryPicker(false); // Fermer le picker une fois qu'un pays est sélectionné
   };
 
   return (
@@ -130,20 +143,37 @@ const AccountInfoScreen = () => {
 
       
 
-      <TextInput
-        style={styles.number}
-        onChangeText={handlePhoneNumberChange}
-        placeholder="+33 "
-        placeholderTextColor="#808080"
-        keyboardType="phone-pad"
-        maxLength={15}
-        value={phoneNumber}
-      />
+<View style={styles.phoneInputContainer}>
+        {/* Sélecteur de pays */}
+        <TouchableOpacity onPress={() => setShowCountryPicker(true)} style={styles.countryCode}>
+          <Text style={styles.countryCodeText}>{callingCode}</Text>
+        </TouchableOpacity>
+        
+        <TextInput
+          style={styles.number}
+          onChangeText={handlePhoneNumberChange}
+          placeholder="Numéro de téléphone"
+          placeholderTextColor="#808080"
+          keyboardType="phone-pad"
+          maxLength={15}
+          value={phoneNumber}
+        />
+      </View>
+
+      {/* Modal de sélection du pays */}
+      {showCountryPicker && (
+        <CountryPicker
+          withFlag
+          withCallingCode
+          onSelect={onSelectCountry}
+          countryCode={countryCode}
+          withFilter
+        />
+      )}
 
       <TouchableOpacity onPress={handleSubmit} style={styles.submitbutton}>
         <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Suivant</Text>
       </TouchableOpacity>
-
       <Text style={{ fontSize: 16, color: 'black', position: 'absolute', bottom: 30, left: 0, right: 0, textAlign: 'center' }}>
         Star set
       </Text>
@@ -260,6 +290,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'blue',
     textDecorationLine: 'underline',
+  },
+
+  phoneInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  countryCode: {
+    width: 60,
+    height: 40,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'black',
+    borderRadius: 8,
+  },
+  countryCodeText: {
+    fontSize: 15,
+    color: 'black',
   },
 });
 
