@@ -25,19 +25,22 @@ const VerificationScreen = () => {
   const sendCode = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${config.backendUrl}/api/auth/generate-new-verification-code`, {
+      const response = await fetch(`${config.backendUrl}/api/auth/send-email-verification-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id : user?.id, communication_type : 'sms', contact_value : user?.number}),
+        body: JSON.stringify({
+          
+          email : email,
+        }),
       });
-
-      if (!response.ok) throw new Error('Erreur de réseau lors de l\'envoi du code');
-
+      if (!response.ok) throw new Error('Erreur réseau lors de l’envoi du code.');
       const data = await response.json();
-      console.log('Code envoyé:', data);
-      setIsCodeSent(true);  // Le code a été envoyé, donc on permet à l'utilisateur de le saisir
+      console.log('Code envoyé par mail :', data);
+      setIsCodeSent(true);
+      setErrorMessage('');
+      setSuccessMessage('Un e-mail de vérification a été envoyé. Pensez à vérifier votre boîte spam !');
     } catch (error) {
-      setErrorMessage('Erreur lors de l\'envoi du code, veuillez réessayer.');
+      setErrorMessage('Erreur lors de l’envoi de l’e-mail. Veuillez réessayer.');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -49,28 +52,28 @@ const VerificationScreen = () => {
       setErrorMessage('Le code de vérification doit contenir 6 chiffres.');
       return;
     }
-
     setIsLoading(true);
     try {
       const response = await fetch(`${config.backendUrl}/api/auth/verify-code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: verificationCode, user_id: 'USER_ID' }), // Utiliser l'ID de l'utilisateur ici
+        body: JSON.stringify({ code: verificationCode, contact_value : email }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Si la réponse n'est pas ok, traiter les erreurs spécifiques
         setErrorMessage(data.message || 'Code incorrect, veuillez vérifier et réessayer.');
       } else {
-        // Si le code est valide et vérifié avec succès
-        setSuccessMessage(data.message || 'Vérification réussie!');
-        setErrorMessage(''); // Effacer les messages d'erreur
-        navigation.navigate('chooseAccount' as never);
+        setSuccessMessage(data.message || 'Adresse e-mail vérifiée avec succès !');
+        setErrorMessage('');
+        navigation.navigate({
+          name: 'selectFields',
+          params: { email: email, password: password },
+        } as never);
       }
     } catch (error) {
-      setErrorMessage('Erreur lors de la vérification du code, veuillez réessayer.');
+      setErrorMessage('Erreur lors de la vérification. Veuillez réessayer.');
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -79,42 +82,42 @@ const VerificationScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Vérification de votre numéro</Text>
-      <Text style={styles.infoText}>Sécurisez votre compte en vérifiant votre numéro de téléphone.</Text>
+      <Text style={styles.title}>Vérification de votre adresse e-mail</Text>
+      <Text style={styles.infoText}>
+        Pour sécuriser votre compte, nous avons besoin de vérifier votre adresse e-mail.
+      </Text>
 
       <Text style={styles.label}>
-        {isCodeSent ? 'Renvoyer le code' : 'Envoyer le code par SMS au numéro'}
+        {isCodeSent ? 'Vous pouvez renvoyer un e-mail si besoin :' : `Envoyer un e-mail de vérification à ${email}`}
       </Text>
-      
-      {/* Si le code n'a pas encore été envoyé, afficher le bouton */}
+
       {!isCodeSent ? (
         <TouchableOpacity
           style={styles.sendButton}
           onPress={sendCode}
-          disabled={isLoading} // Désactiver le bouton pendant le chargement
+          disabled={isLoading}
         >
           <Text style={styles.buttonText}>
-            {isLoading ? 'Envoi en cours...' : 'Envoyer le code'}
+            {isLoading ? 'Envoi en cours...' : 'Envoyer l’e-mail'}
           </Text>
         </TouchableOpacity>
       ) : (
         <>
-          {/* Si le code a été envoyé, afficher le champ de saisie pour entrer le code */}
-          <Text style={styles.label}>Entrez le code que vous avez reçu :</Text>
+          <Text style={styles.label}>Entrez le code reçu par e-mail :</Text>
           <TextInput
             style={styles.input}
             value={verificationCode}
             onChangeText={handleCodeChange}
-            maxLength={6}  // Limite de 6 caractères pour un code de vérification classique
+            maxLength={6}
             keyboardType="numeric"
           />
           <Text style={styles.charCount}>{charCount}/6</Text>
-          
-          {/* Afficher les messages d'erreur ou de succès */}
+
           {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
           {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
-
-          {/* Bouton pour soumettre le code */}
+          <Text style={styles.tipText}>
+            📩 Si vous ne voyez pas l’e-mail, pensez à vérifier dans vos spams.
+          </Text>
           <TouchableOpacity
             style={styles.verifyButton}
             onPress={verifyCode}
@@ -192,17 +195,27 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 5,
   },
+
   errorText: {
     fontSize: 14,
     color: 'red',
     textAlign: 'center',
     marginTop: 10,
   },
+
   successText: {
     fontSize: 14,
     color: 'green',
     textAlign: 'center',
     marginTop: 10,
+  },
+
+  tipText: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 15,
+    fontStyle: 'italic',
   },
 });
 

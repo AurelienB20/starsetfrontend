@@ -138,11 +138,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
   },
+
   profilePicture: {
     width: 100,
     height: 100,
     borderRadius: 50,
   },
+  
   sectionHeader: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -160,42 +162,50 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
   },
+
   tagText: {
     fontSize: 16,
     color: '#000',
   },
+
   addressText: {
     fontSize: 16,
     color: '#000',
     marginBottom: 10,
   },
+
   noteText: {
     fontSize: 16,
     color: '#000',
     fontStyle: 'italic',
   },
+
   paymentContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     marginBottom: 10,
   },
+
   paymentText: {
     fontSize: 16,
     color: '#000',
   },
+
   paymentAmount: {
     fontSize: 16,
     color: '#000',
   },
+
   button: {
-    backgroundColor: '#00FF00',
+    backgroundColor: 'green',
     padding: 15,
     borderRadius: 5,
     marginTop: 20,
     width: '100%',
     alignItems: 'center',
   },
+
   buttonText: {
     fontSize: 16,
     color: '#000',

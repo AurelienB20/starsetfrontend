@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CountryPicker from 'react-native-country-picker-modal'; // Importer la bibliothèque
 import DateTimePicker from '@react-native-community/datetimepicker';
 import config from '../config.json';
+import PhoneInput from 'react-native-phone-number-input';
+import { Platform } from 'react-native';
 
 const AccountInfoScreen = () => {
   const [firstName, setFirstName] = useState('');
@@ -12,6 +14,8 @@ const AccountInfoScreen = () => {
   const [birthDate, setBirthDate] = useState(new Date());
   
   const [phoneNumber, setPhoneNumber] = useState('');
+  const phoneInputRef = useRef<PhoneInput>(null);
+
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [countryCode, setCountryCode] = useState<any>('FR'); // Code du pays initial, ici la France
@@ -21,7 +25,7 @@ const AccountInfoScreen = () => {
   const navigation = useNavigation();
   const route = useRoute() as any;
   const { email, password , preferredFields, address, coordinates} = route.params || {};
-  console.log(coordinates)
+  
   const handleFirstNameChange = (text : any) => setFirstName(text);
   const handleLastNameChange = (text : any) => setLastName(text);
   const handlePhoneNumberChange = (text : any) => setPhoneNumber(text);
@@ -38,6 +42,10 @@ const AccountInfoScreen = () => {
   };
 
   const handleSubmit = async () => {
+    const fullPhoneNumber = `+${callingCode}${phoneNumber}`.replace(/\s/g, '');
+    console.log('fullPhoneNumber')
+    console.log(fullPhoneNumber)
+
     try {
       const response = await fetch(`${config.backendUrl}/api/auth/register`, {
         method: 'POST',
@@ -143,22 +151,33 @@ const AccountInfoScreen = () => {
 
       
 
-<View style={styles.phoneInputContainer}>
-        {/* Sélecteur de pays */}
-        <TouchableOpacity onPress={() => setShowCountryPicker(true)} style={styles.countryCode}>
-          <Text style={styles.countryCodeText}>{callingCode}</Text>
-        </TouchableOpacity>
-        
-        <TextInput
-          style={styles.number}
-          onChangeText={handlePhoneNumberChange}
-          placeholder="Numéro de téléphone"
-          placeholderTextColor="#808080"
-          keyboardType="phone-pad"
-          maxLength={15}
-          value={phoneNumber}
-        />
-      </View>
+      <PhoneInput
+        ref={phoneInputRef}
+        defaultValue={phoneNumber}
+        defaultCode="FR"
+        layout="first"
+        onChangeFormattedText={(text) => setPhoneNumber(text)}
+        containerStyle={{
+          borderWidth: 2,
+          borderColor: 'black',
+          borderRadius: 10,
+          backgroundColor: 'white',
+          width: '80%',
+          
+          marginBottom: 20,
+        }}
+        textContainerStyle={{
+          borderRadius: 8,
+          backgroundColor: 'white',
+        }}
+        textInputStyle={{
+          color: 'black',
+          fontFamily: 'Outfit',
+          textAlign: 'center',
+          fontSize: 15,
+        }}
+        codeTextStyle={{ color: 'black' }}
+      />
 
       {/* Modal de sélection du pays */}
       {showCountryPicker && (

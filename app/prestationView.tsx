@@ -21,6 +21,7 @@ const PrestationViewScreen = () => {
   const [prestation, setPrestation] = useState<any>({});
   const [prestationImages, setPrestationImages] = useState<any>([]);
   const [experiences, setExperiences] = useState([])
+  const [certifications, setCertifications] = useState([])
   const [isDatePickerVisible, setDatePickerVisible] = useState(false); // State for the date picker modal
   const [selectedDate, setSelectedDate] = useState('');
   const [isCalendarVisible, setCalendarVisible] = useState(false); // State for the calendar modal
@@ -112,8 +113,20 @@ const PrestationViewScreen = () => {
     setDatePickerVisible(!isDatePickerVisible); // Toggle the visibility of the date picker
   };
 
-  const toggleArrivalTimePicker = () => setArrivalTimePickerVisible(!isArrivalTimePickerVisible);
-  const toggleDepartureTimePicker = () => setDepartureTimePickerVisible(!isDepartureTimePickerVisible);
+  const toggleArrivalTimePicker = () => {
+    setCalendarVisible(false)
+    setArrivalTimePickerVisible(!isArrivalTimePickerVisible);
+    console.log('ici')
+    console.log('ici')
+    console.log('ici')
+    console.log('ici')
+    console.log('ici')
+    console.log(isArrivalTimePickerVisible)
+  }
+  const toggleDepartureTimePicker = () => {
+    setArrivalTimePickerVisible(false)
+    setDepartureTimePickerVisible(!isDepartureTimePickerVisible);
+  }
 
 
   const toggleTimePicker = () => {
@@ -298,6 +311,33 @@ const PrestationViewScreen = () => {
   
   }
 
+  const getAllCertification = async () => {
+    try {
+      console.log('debut get all certification')
+      
+      const response = await fetch(`${config.backendUrl}/api/mission/get-all-certification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prestation_id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      console.log('certifications :', data.certifications);
+
+      // Stocker les prestations dans l'état
+      setCertifications(data.certifications);
+      
+    } catch (error) {
+      console.error('Une erreur est survenue lors de la récupération des certifications:', error);
+    }
+  };
+
   const getAllExperience = async () => {
     try {
       console.log('debut get experiences')
@@ -368,7 +408,8 @@ const PrestationViewScreen = () => {
 
   useEffect(() => {
     getPrestation();
-    getAllExperience()
+    getAllExperience();
+    getAllCertification()
     
   }, []);
 
@@ -377,6 +418,7 @@ const PrestationViewScreen = () => {
     // Ajoutez ici la logique pour recharger les données avec l'ID
     getPrestation()
     getAllExperience()
+    getAllCertification()
     
   }, [route.params.id]);
 
@@ -522,9 +564,21 @@ const PrestationViewScreen = () => {
       )}
 
       {selectedTab === 'certifications' && (
-        <View style={styles.certificationsContainer}>
-          <Text>Aucune certification disponible pour l'instant.</Text>
-        </View>
+        <View style={styles.experienceContainer}>
+        {certifications.length === 0 ? (
+          <Text>Aucune certification disponible.</Text>
+        ) : (
+          certifications.map((certification : any, index) => (
+            <View key={index} style={styles.experienceCard}>
+              <Text style={styles.experienceTitle}>{certification.title}</Text>
+              <Text style={styles.experienceDate}>{certification.date}</Text>
+              <Text style={styles.experienceDate}>{certification.establishment}</Text>
+              <Text style={styles.experienceDescription}>{certification.description}</Text>
+              
+            </View>
+          ))
+        )}
+      </View>
       )}
 
       {/* Avis */}
@@ -581,7 +635,7 @@ const PrestationViewScreen = () => {
       
             {/* Custom Time Input Modal */}
         {/* Arrival Time Input Modal */}
-      <Modal animationType="slide" transparent={true} visible={isArrivalTimePickerVisible} onRequestClose={toggleArrivalTimePicker}>
+      <Modal animationType="none" transparent={true} visible={isArrivalTimePickerVisible} onRequestClose={toggleArrivalTimePicker}>
         <View style={styles.timePickerModalContainer}>
           <View style={styles.timePickerContent}>
             <TouchableOpacity onPress={toggleArrivalTimePicker} style={styles.closeIcon}>
@@ -798,7 +852,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   selectedTagText: {
-    color: '#000', // Texte plus foncé pour le badge sélectionné
+    color: '#fff', // Texte plus foncé pour le badge sélectionné
     fontWeight: 'bold',
   },
 
@@ -1088,6 +1142,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+  
   timePickerContent: {
     width: '80%',
     backgroundColor: 'white',
@@ -1266,7 +1321,7 @@ const styles = StyleSheet.create({
   // HEADER
   headerBar: {
     position : 'absolute',
-    top: 10, // Positionné à 10px du bas de l'écran
+    top: 25, // Positionné à 10px du bas de l'écran
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -1278,6 +1333,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     backgroundColor: '#fff',
   },
+  
   backButton: {
     padding: 5,
   },

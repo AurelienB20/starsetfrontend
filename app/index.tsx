@@ -30,42 +30,41 @@ const StarsetScreen = () => {
   const getProfile = async () => {
     try {
       const accountId = await getAccountId();
-      if (!accountId) return;
-
+      if (!accountId) {
+        navigation.navigate('connexion' as never);
+        return;
+      }
+  
       const response = await fetch(`${config.backendUrl}/api/auth/get-account-by-id`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accountId }),
       });
-
+  
       if (!response.ok) throw new Error('Erreur de réseau');
-
+  
       const data = await response.json();
       console.log('Utilisateur chargé:', data.account);
-
+  
       setUser(data.account); // Met à jour le contexte utilisateur
+  
+      console.log('test putain j espere ca marche')
+      // 🚨 Redirection ici selon verified
+      if (!data.account.verified) {
+        navigation.navigate('(tabs)' as never);
+      } else {
+        navigation.navigate('(tabs)' as never);
+      }
+  
     } catch (error) {
       console.error('Erreur lors du chargement du profil:', error);
     }
   };
 
   useEffect(() => {
-    getProfile()
+    
 
-    const checkAccount = async () => {
-      try {
-        const accountId = await AsyncStorage.getItem('account_id');
-        if (!accountId) {
-          console.log(1)
-          navigation.navigate('connexion' as never);
-        } else {
-          console.log('connecté')
-          navigation.navigate('(tabs)' as never);
-        }
-      } catch (error) {
-        console.error('Error fetching account_id from AsyncStorage', error);
-      }
-    };
+    
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -73,7 +72,7 @@ const StarsetScreen = () => {
           return prev + 25; // Increment de 12.5% à chaque seconde
         } else {
           clearInterval(interval);
-          checkAccount();
+          getProfile()
           return prev;
         }
       });

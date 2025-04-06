@@ -37,7 +37,7 @@ const CreationScreen = () => {
     }
     
     navigation.navigate({
-      name: 'selectFields',
+      name: 'mailVerificationCode',
       params: { email: email, password: password },
     } as never);
   };
@@ -82,7 +82,7 @@ const CreationScreen = () => {
         style={styles.submitbutton}
         disabled={!isEmailValid}
       >
-        <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Suivant</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color : 'white' }}>Suivant</Text>
       </TouchableOpacity>
     </View>
   );
@@ -154,11 +154,12 @@ const styles = StyleSheet.create({
     maxWidth: 300,
     width: '60%',
     height: 50,
-    backgroundColor: '#70FF70',
+    backgroundColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 10,
     borderRadius: 25,
+    
   },
 });
 

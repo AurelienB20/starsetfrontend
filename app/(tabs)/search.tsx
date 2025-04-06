@@ -356,21 +356,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e0e0e0',
     marginHorizontal : 10,
-    width : '70%',
+    flex :1
     
 
   },
   
   profileImage: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     borderRadius: 20,
     marginRight: 10,
     
   },
   profileInfo: {
-    
-    width : '100%'
+    //backgroundColor : 'red',
+    flex : 1
   },
   profileName: {
     fontSize: 16,
@@ -397,7 +397,9 @@ const styles = StyleSheet.create({
 
   profileCategories: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',     // Important : on empêche le retour à la ligne
+    overflow: 'hidden',     // Cache les badges qui débordent
+    maxWidth: '100%',       // Empêche de dépasser le parent
   },
 
   categoryBadge: {
@@ -422,8 +424,9 @@ const styles = StyleSheet.create({
 
   nameAndRating: {
     justifyContent : 'space-between',
-    width : '100%',
-    flexDirection : 'row'
+    
+    flexDirection : 'row',
+    //backgroundColor : 'green'
   },
 
   statusIndicator: {

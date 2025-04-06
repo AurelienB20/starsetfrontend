@@ -5,7 +5,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'av
 import { saveMode } from '../chooseAccount';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome } from '@expo/vector-icons';
-
 import config from '../../config.json';
 
 const AccountScreen = () => {
@@ -54,6 +53,14 @@ const AccountScreen = () => {
 
   const goToDocument = async () => {
     navigation.navigate('document' as never);
+  };
+
+  const goToHistory = async () => {
+    navigation.navigate('history' as never);
+  };
+
+  const goToVerificationCode = async () => {
+    navigation.navigate('verificationCode' as never);
   };
 
   const getAccountId = async () => {
@@ -226,8 +233,8 @@ const AccountScreen = () => {
       <TouchableOpacity style={styles.menuItem}>
         <Text style={styles.menuItemText}>Aide</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Star Set Premiere</Text>
+      <TouchableOpacity style={styles.menuItem} onPress={goToHistory}>
+        <Text style={styles.menuItemText}>Historique</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem}>
         <Text style={styles.menuItemText}>Paramètres</Text>
@@ -242,10 +249,10 @@ const AccountScreen = () => {
         <Text style={styles.menuItemText}>Document</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText} onPress={openHistoryModal}>Historique</Text>
+        <Text style={styles.menuItemText} onPress={openHistoryModal}>en cours</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToGetLocation}>
-        <Text style={styles.menuItemText}>getLocation</Text>
+      <TouchableOpacity style={styles.menuItem} onPress={goToVerificationCode}>
+        <Text style={styles.menuItemText}>verificationCode</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={changeToWorker}>
         <Text style={styles.menuItemText}>Interface Worker</Text>
