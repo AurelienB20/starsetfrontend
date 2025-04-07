@@ -67,7 +67,7 @@ const AccountInfoScreen = () => {
       const data = await response.json();
       saveData(data.account);
       if (data.success) {
-        navigation.navigate('verificationCode' as never);
+        navigation.navigate('chooseAccount' as never);
       } else {
         alert(data.message);
       }
@@ -156,7 +156,7 @@ const AccountInfoScreen = () => {
         defaultValue={phoneNumber}
         defaultCode="FR"
         layout="first"
-        onChangeFormattedText={(text) => setPhoneNumber(text)}
+        onChangeFormattedText={(text : any) => setPhoneNumber(text)}
         containerStyle={{
           borderWidth: 2,
           borderColor: 'black',

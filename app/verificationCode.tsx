@@ -67,7 +67,10 @@ const VerificationScreen = () => {
         // Si le code est valide et vérifié avec succès
         setSuccessMessage(data.message || 'Vérification réussie!');
         setErrorMessage(''); // Effacer les messages d'erreur
-        navigation.navigate('chooseAccount' as never);
+        navigation.navigate({
+          name: 'selectFields',
+          params: { email: email, password: password },
+        } as never);
       }
     } catch (error) {
       setErrorMessage('Erreur lors de la vérification du code, veuillez réessayer.');

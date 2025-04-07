@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ImageBackground, GestureResponderEvent } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
@@ -23,7 +23,7 @@ const extractAddressParts = (address : any) => {
 const SummaryScreen = () => {
   const [isSelected, setSelection] = React.useState(false);
   const {user , setUser} = useUser()
-  const { street, city, country } = extractAddressParts(user?.adress); // Utilisation de la fonction
+  const [addressParts, setAddressParts] = useState({ street: 'N/A', city: 'N/A', country: 'N/A' });
 
   const route = useRoute() as any;
   route.params
@@ -57,6 +57,14 @@ const SummaryScreen = () => {
   } else {
     console.log('startDate or endDate is null or undefined');
   }
+
+  useEffect(() => {
+    if (user) {
+      const { street, city, country } = extractAddressParts(user.adress);
+      setAddressParts({ street, city, country });
+    }
+  }, [user]);
+  
 
   
 
@@ -109,16 +117,16 @@ const SummaryScreen = () => {
 
         <View style={styles.row}>
           <View style={styles.case}>
-            <Text style={styles.infoText}>{street}</Text>
+            <Text style={styles.infoText}>{addressParts?.street}</Text>
           </View>
           <View style={styles.case}>
-            <Text style={styles.infoText}>{city}</Text>
+            <Text style={styles.infoText}>{addressParts?.city}</Text>
           </View>
         </View>
         
         <View style={styles.row}>
           <View style={styles.date}>
-            <Text style={styles.infoText}>{country}</Text>
+            <Text style={styles.infoText}>{addressParts?.country}</Text>
           </View>
         </View>
       </View>

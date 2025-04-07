@@ -49,6 +49,7 @@ const PrestationViewScreen = () => {
   const [departureMinute, setDepartureMinute] = useState('');
   const [selectedMetier, setSelectedMetier] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [modalType, setModalType] = useState<string | null>(null); // 'date', 'arrival', 'departure'
   
     const profileImageSize = scrollY.interpolate({
       inputRange: [0, 70],
@@ -114,18 +115,15 @@ const PrestationViewScreen = () => {
   };
 
   const toggleArrivalTimePicker = () => {
-    setCalendarVisible(false)
-    setArrivalTimePickerVisible(!isArrivalTimePickerVisible);
-    console.log('ici')
-    console.log('ici')
-    console.log('ici')
-    console.log('ici')
-    console.log('ici')
-    console.log(isArrivalTimePickerVisible)
+    //setCalendarVisible(false)
+    //setArrivalTimePickerVisible(!isArrivalTimePickerVisible);
+    //console.log(isArrivalTimePickerVisible)
+    openModal('arrival'); // Ouvre le modal pour l'heure d'arrivée
   }
   const toggleDepartureTimePicker = () => {
-    setArrivalTimePickerVisible(false)
-    setDepartureTimePickerVisible(!isDepartureTimePickerVisible);
+    //setArrivalTimePickerVisible(false)
+    //setDepartureTimePickerVisible(!isDepartureTimePickerVisible);
+    openModal('departure'); // Ouvre le modal pour l'heure d'arrivée
   }
 
 
@@ -134,8 +132,9 @@ const PrestationViewScreen = () => {
   };
 
   const toggleCalendar = () => {
-    setCalendarVisible(!isCalendarVisible); // Toggle the visibility of the calendar
-    console.log(1)
+    //setCalendarVisible(!isCalendarVisible); // Toggle the visibility of the calendar
+    //console.log(1)
+    openModal('date'); // Ouvre le modal pour la sélection de la date
   };
 
   const handleDateSelect = (day : any) => {
@@ -221,6 +220,11 @@ const PrestationViewScreen = () => {
     } catch (error) {
       console.error('Erreur lors de la vérification de la conversation:', error);
     }
+  };
+
+  const openModal = (type: string) => {
+    setModalType(type);
+    setCalendarVisible(true); // Ouvre le modal
   };
 
   const createConversation = async () => {
@@ -401,10 +405,6 @@ const PrestationViewScreen = () => {
     setSelectedImage(null);
     setImageModalVisible(false);
   };
-
-
-  
-  
 
   useEffect(() => {
     getPrestation();
@@ -606,7 +606,7 @@ const PrestationViewScreen = () => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={isCalendarVisible}
+        visible={false}
         onRequestClose={toggleCalendar}
       >
         <View style={styles.modalContainer}>
@@ -757,6 +757,101 @@ const PrestationViewScreen = () => {
                 <Text style={styles.conversationModalCancelButtonText}>Non</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isCalendarVisible}
+        onRequestClose={toggleCalendar}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {/* Petite croix pour fermer le modal */}
+            <TouchableOpacity onPress={toggleCalendar} style={styles.closeIcon}>
+              <Icon name="close" size={24} color="#000" />
+            </TouchableOpacity>
+
+            {/* Afficher le contenu en fonction du type */}
+            {modalType === 'date' && (
+              <>
+                <Text style={styles.modalTitle}>Choisissez une date</Text>
+                <Calendar
+                  onDayPress={handleDateSelect}
+                  markingType="period"
+                  markedDates={getMarkedDates()}
+                  style={styles.calendar}
+                />
+                <TouchableOpacity onPress={toggleArrivalTimePicker} style={styles.horairesButton}>
+                  <Text style={styles.horairesButtonText}>Horaires</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {modalType === 'arrival' && (
+              <>
+                <Text style={styles.modalTitle}>Heure d'arrivée</Text>
+                <View style={styles.inputRow}>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    maxLength={2}
+                    placeholder="HH"
+                    value={arrivalHour}
+                    onChangeText={(text) => handleHourChange(text, setArrivalHour)}
+                  />
+                  <Text style={styles.timeSeparator}>:</Text>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    maxLength={2}
+                    placeholder="MM"
+                    value={arrivalMinute}
+                    onChangeText={(text) => handleMinuteChange(text, setArrivalMinute)}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.nextButton}
+                  onPress={() => {
+                    setModalType('departure'); // Changer pour l'heure de départ
+                  }}
+                >
+                  <Text style={styles.nextButtonText}>Suivant</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {modalType === 'departure' && (
+              <>
+                <Text style={styles.modalTitle}>Heure de départ</Text>
+                <View style={styles.inputRow}>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    maxLength={2}
+                    placeholder="HH"
+                    value={departureHour}
+                    onChangeText={(text) => handleHourChange(text, setDepartureHour)}
+                  />
+                  <Text style={styles.timeSeparator}>:</Text>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    maxLength={2}
+                    placeholder="MM"
+                    value={departureMinute}
+                    onChangeText={(text) => handleMinuteChange(text, setDepartureMinute)}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.nextButton}
+                  onPress={() => goToSummary()}
+                >
+                  <Text style={styles.nextButtonText}>Confirmer</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </Modal>
