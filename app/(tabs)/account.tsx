@@ -63,6 +63,10 @@ const AccountScreen = () => {
     navigation.navigate('verificationCode' as never);
   };
 
+  const goToAvailability = async () => {
+    navigation.navigate('availability' as never);
+  };
+
   const getAccountId = async () => {
     try {
       const account_id = await AsyncStorage.getItem('account_id');
@@ -242,8 +246,8 @@ const AccountScreen = () => {
       <TouchableOpacity style={styles.menuItem}>
         <Text style={styles.menuItemText}>Langues</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>À propos</Text>
+      <TouchableOpacity style={styles.menuItem} onPress={goToAvailability}>
+        <Text style={styles.menuItemText}>Availability</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={goToDocument}>
         <Text style={styles.menuItemText}>Document</Text>
