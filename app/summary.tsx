@@ -6,24 +6,13 @@ import { StyleSheet, TextStyle, Image } from 'react-native';
 import config from '../config.json';
 import { useUser } from '@/context/userContext';
 
-const extractAddressParts = (address : any) => {
-  if (!address) return { street: 'N/A', city: 'N/A', postalCode: 'N/A' };
 
-  const parts = address.split(',');
-  
-  if (parts.length < 3) return { street: 'N/A', city: 'N/A', postalCode: 'N/A' };
-  
-  const street = parts[0]?.trim() || 'N/A';
-  const city = parts[1]?.trim() || 'N/A';
-  const country = parts[2]?.trim() || 'N/A';
-
-  return { street, city, country };
-};
 
 const SummaryScreen = () => {
   const [isSelected, setSelection] = React.useState(false);
   const {user , setUser} = useUser()
   const [addressParts, setAddressParts] = useState({ street: 'N/A', city: 'N/A', country: 'N/A' });
+
 
   const route = useRoute() as any;
   route.params
@@ -59,11 +48,24 @@ const SummaryScreen = () => {
   }
 
   useEffect(() => {
-    if (user) {
-      const { street, city, country } = extractAddressParts(user.adress);
+      const { street, city, country } = extractAddressParts(user?.address);
       setAddressParts({ street, city, country });
-    }
-  }, [user]);
+  }, []);
+
+  
+const extractAddressParts = (address : any) => {
+  console.log("123456789")
+
+  const parts = address.split(',');
+  
+  if (parts.length < 3) return { street: 'N/A', city: 'N/A', postalCode: 'N/A' };
+  
+  const street = parts[0]?.trim() || 'N/A';
+  const city = parts[1]?.trim() || 'N/A';
+  const country = parts[2]?.trim() || 'N/A';
+  console.log(street)
+  return { street, city, country };
+};
   
 
   
