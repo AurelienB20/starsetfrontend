@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal } from 'react-native';
-import {Calendar} from 'react-native-big-calendar';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Platform } from 'react-native';
+import { Calendar } from 'react-native-big-calendar';
 import moment from 'moment';
 import config from '../config.json';
 import { useNavigation } from '@react-navigation/native';
@@ -13,15 +13,6 @@ const ModifyAvailabilityScreen = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [workingDays, setWorkingDays] = useState<any>({
-    monday: false,
-    tuesday: false,
-    wednesday: false,
-    thursday: false,
-    friday: false,
-    saturday: false,
-    sunday: false,
-  });
   const [timeRange, setTimeRange] = useState({ start: '', end: '' });
 
   useEffect(() => {
@@ -32,6 +23,7 @@ const ModifyAvailabilityScreen = () => {
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
+    setTimeRange({ start: '', end: '' });
     setShowModal(true);
   };
 
@@ -61,12 +53,12 @@ const ModifyAvailabilityScreen = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ account: updatedUser }),
       });
-      if (!response.ok) throw new Error('Erreur de réseau');
+      if (!response.ok) throw new Error('Erreur réseau');
 
       const data = await response.json();
       console.log('Mise à jour réussie:', data);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du compte:', error);
+      console.error('Erreur lors de la mise à jour :', error);
     }
     navigation.goBack();
   };
@@ -75,32 +67,26 @@ const ModifyAvailabilityScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Modifier vos disponibilités</Text>
 
-      <View style={styles.daysContainer}>
-        <Text style={styles.label}>Jours de la semaine</Text>
-        {Object.keys(workingDays).map((day, index) => (
-          <View key={index} style={styles.dayCheckboxContainer}>
-            <Text style={styles.dayLabel}>{day.charAt(0).toUpperCase() + day.slice(1)}</Text>
-            <TouchableOpacity
-              style={styles.checkbox}
-              onPress={() => setWorkingDays({ ...workingDays, [day]: !workingDays[day] })}
-            >
-              <Text>{workingDays[day] ? '✔️' : '❌'}</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-
       <Calendar
         events={events}
-        height={400}
-        onPressCell={handleDateClick}
+        height={600}
         mode="week"
+        weekStartsOn={1} // Lundi
+        onPressCell={handleDateClick}
+        swipeEnabled={true}
+        scrollOffsetMinutes={480} // Start view at 8am
+        
       />
 
-      <Modal visible={showModal} animationType="slide" transparent={true}>
+      <Modal visible={showModal} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Ajouter une disponibilité</Text>
+            {selectedDate && (
+              <Text style={styles.selectedDate}>
+                {moment(selectedDate).locale('fr').format('dddd')}
+              </Text>
+            )}
 
             <TextInput
               style={styles.input}
@@ -116,11 +102,11 @@ const ModifyAvailabilityScreen = () => {
             />
 
             <TouchableOpacity style={styles.button} onPress={handleAddAvailability}>
-              <Text style={styles.buttonText}>Ajouter Disponibilité</Text>
+              <Text style={styles.buttonText}>Ajouter</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.button} onPress={() => setShowModal(false)}>
-              <Text style={styles.buttonText}>Fermer</Text>
+            <TouchableOpacity style={[styles.button, { backgroundColor: '#ccc' }]} onPress={() => setShowModal(false)}>
+              <Text style={styles.buttonText}>Annuler</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -134,20 +120,25 @@ const ModifyAvailabilityScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  label: { fontSize: 16, fontWeight: 'bold', marginBottom: 10 },
-  daysContainer: { marginBottom: 20 },
-  dayCheckboxContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  dayLabel: { fontSize: 16, marginRight: 10 },
-  checkbox: { padding: 10, borderWidth: 1, borderRadius: 5, marginRight: 20 },
-  modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+
+  modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
   modalContent: { backgroundColor: 'white', padding: 20, borderRadius: 10, width: '80%' },
   modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   input: { height: 40, borderColor: 'gray', borderWidth: 1, borderRadius: 5, marginBottom: 10, paddingHorizontal: 10 },
-  button: { backgroundColor: '#70FF70', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20, marginBottom: 10 },
-  buttonText: { fontSize: 16, fontWeight: 'bold', textAlign: 'center' },
-  confirmButton: { backgroundColor: '#70FF70', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20 },
+
+  button: { backgroundColor: '#70FF70', padding: 10, borderRadius: 8, marginTop: 10 },
+  buttonText: { fontSize: 16, textAlign: 'center' },
+  confirmButton: { backgroundColor: '#70FF70', padding: 12, borderRadius: 10, marginTop: 20 },
+  selectedDate: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#333',
+    textTransform: 'capitalize',
+  },
 });
 
 export default ModifyAvailabilityScreen;
