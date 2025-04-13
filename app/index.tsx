@@ -94,13 +94,9 @@ const StarsetScreen = () => {
 
   return (
     <View style={styles.container}>
+      
       <Image
-        source={{ uri: './assets/images/logo_gif.gif' }}
-        style={styles.logo}
-        
-      />
-      <Image
-        source={require('../assets/images/logo_gif.gif')}
+        source={require('../assets/images/logo_gif_hd.gif')}
         style={{ width: '80%', height: 200 }}
         contentFit="contain"
         

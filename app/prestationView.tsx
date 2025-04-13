@@ -1307,6 +1307,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
+  
   picker: {
     width: 100,
   },
@@ -1317,6 +1318,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
+
   input: {
     width: 60,
     height: 50,

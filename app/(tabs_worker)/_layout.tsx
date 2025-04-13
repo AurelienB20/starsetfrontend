@@ -17,7 +17,7 @@ import { Pressable } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 
 
 const Tab = createBottomTabNavigator();
@@ -120,7 +120,7 @@ export default function TabNavigator() {
   }}
 />   
     </Tabs>
-     <Modal
+    <Modal
       animationType="slide"
       transparent
       visible={isPopupVisible}
@@ -128,12 +128,18 @@ export default function TabNavigator() {
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalText}>Options de profil</Text>
-          <Pressable onPress={goToUserTabs}>
-            <Text style={styles.closeButton}>compte user</Text>
+        <Pressable onPress={goToUserTabs} style={styles.widthMax}>
+            <View style={[styles.changeContainer, styles.userContainer]}>
+              <FontAwesome5 name="user-circle" size={26} color="black" style={styles.leftIcon} />
+              <Text style={styles.modalText}>USER</Text> 
+            </View>
           </Pressable>
-          <Pressable onPress={goToWorkerTabs}>
-            <Text style={styles.closeButton}>compte worker</Text>
+
+          <Pressable onPress={goToWorkerTabs} style={styles.widthMax}>
+            <View style={[styles.changeContainer, styles.workerContainer]}>
+              <FontAwesome5 name="hard-hat" size={24} color="white" style={styles.leftIcon} />
+              <Text style={styles.modalText}>WORKER</Text> 
+            </View>
           </Pressable>
           <Pressable onPress={() => setPopupVisible(false)}>
             <Text style={styles.closeButton}>Fermer</Text>
@@ -145,31 +151,76 @@ export default function TabNavigator() {
   );
 }
 
-
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  
+
   modalContent: {
     backgroundColor: 'white',
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     alignItems: 'center',
+    width : '100%'
   },
 
   modalText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    fontSize: 24,
+    
+    margin: 12,
+    fontFamily: 'BebasNeue',
+    color : 'white'
   },
 
   closeButton: {
+    marginTop : 10,
     fontSize: 16,
     color: 'blue',
+    fontWeight : 'bold'
   },
-});
 
+  changeContainer : {
+    
+    margin: 5,
+    marginHorizontal : 20,
+    alignItems : "center",
+    justifyContent : "center",
+    borderRadius : 20,
+    width : '100%',
+    
+  },
+
+  userContainer : {
+    backgroundColor : 'gold'//'#F2C700'
+  },
+
+  workerContainer : {
+    backgroundColor : '#00A65A'
+  },
+
+  widthMax : {
+    width : '100%',
+    
+    justifyContent : 'center',
+    alignItems : 'center'
+  },
+
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  icon: {
+    marginRight: 10,
+  },
+
+  leftIcon: {
+    position: 'absolute',
+    left: 20, // ou un autre padding si besoin
+  },
+
+});

@@ -13,11 +13,16 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Modal, View, Text, StyleSheet } from 'react-native';
 import { Pressable } from 'react-native';
+import { useFonts } from 'expo-font';
+import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const [isPopupVisible, setPopupVisible] = useState(false);
   const navigation = useNavigation();
+  let [fontsLoaded] = useFonts({
+      BebasNeue: BebasNeue_400Regular,
+  });
   
   const goToUserTabs = async () => {
     navigation.navigate('(tabs)' as never);
@@ -113,14 +118,17 @@ export default function TabLayout() {
 >
   <View style={styles.modalOverlay}>
     <View style={styles.modalContent}>
-      <Pressable onPress={goToUserTabs}>
-        <View style={styles.changeContainer}>
-          <Text style={styles.modalText}>compte user</Text> 
+    <Pressable onPress={goToUserTabs} style={styles.widthMax}>
+        <View style={[styles.changeContainer, styles.userContainer]}>
+          <FontAwesome5 name="user-circle" size={26} color="black" style={styles.leftIcon} />
+          <Text style={styles.modalText}>USER</Text> 
         </View>
       </Pressable>
-      <Pressable onPress={goToWorkerTabs}>
-        <View style={styles.changeContainer}>
-          <Text style={styles.modalText}>compte worker</Text> 
+
+      <Pressable onPress={goToWorkerTabs} style={styles.widthMax}>
+        <View style={[styles.changeContainer, styles.workerContainer]}>
+          <FontAwesome5 name="hard-hat" size={24} color="white" style={styles.leftIcon} />
+          <Text style={styles.modalText}>WORKER</Text> 
         </View>
       </Pressable>
       <Pressable onPress={() => setPopupVisible(false)}>
@@ -150,9 +158,11 @@ const styles = StyleSheet.create({
   },
 
   modalText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    margin: 5,
+    fontSize: 24,
+    
+    margin: 12,
+    fontFamily: 'BebasNeue',
+    color : 'white'
   },
 
   closeButton: {
@@ -164,12 +174,44 @@ const styles = StyleSheet.create({
 
   changeContainer : {
     
-    margin: 10,
+    margin: 5,
+    marginHorizontal : 20,
     alignItems : "center",
     justifyContent : "center",
     borderRadius : 20,
-    width : 200,
-    backgroundColor : '#CCC'
-  }
+    width : '100%',
+    
+  },
+
+  userContainer : {
+    backgroundColor : 'gold'//'#F2C700'
+  },
+
+  workerContainer : {
+    backgroundColor : '#00A65A'
+  },
+
+  widthMax : {
+    width : '100%',
+    
+    justifyContent : 'center',
+    alignItems : 'center'
+  },
+
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  icon: {
+    marginRight: 10,
+  },
+
+  leftIcon: {
+    position: 'absolute',
+    left: 20, // ou un autre padding si besoin
+  },
+
 });
 

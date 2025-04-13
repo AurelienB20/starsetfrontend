@@ -198,9 +198,17 @@ const SearchScreen = () => {
       keyExtractor={(item : any) => item.worker_id.toString()}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
+      showsVerticalScrollIndicator={false}
       ListHeaderComponent={
         <View style={styles.container}>
           <Text style={styles.headerText}>Star Set</Text>
+          <TouchableOpacity style={styles.bellIconContainer} onPress={() => console.log('Notifications')}>
+            <Ionicons name="notifications-outline" size={28} color="#000" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.fakeSearchBar}>
+  <Ionicons name="location-sharp" size={16} color="#999" style={{ marginRight: 8 }} />
+  <Text style={styles.fakeSearchText}>Autour de chez vous</Text>
+</TouchableOpacity>
           <FlatList
             data={prestations}
             horizontal
@@ -357,8 +365,6 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     marginHorizontal : 10,
     flex :1
-    
-
   },
   
   profileImage: {
@@ -513,6 +519,57 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+
+  searchContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    width: '90%',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  
+  searchLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#333',
+  },
+  
+  searchInput: {
+    width: '100%',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    fontSize: 14,
+    marginTop: 5,
+    color: '#000',
+  },
+
+  fakeSearchBar: {
+    flexDirection: 'row',
+    width : '95%',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    marginHorizontal: 40,
+  },
+  
+  fakeSearchText: {
+    fontSize: 14,
+    color: '#999',
+  },
+
+  bellIconContainer: {
+    position: 'absolute',
+    top: 40, // Ajuste en fonction de ton padding top ou safe area
+    right: 20,
+    zIndex: 10,
+  },
+  
 });
 
 export default SearchScreen;

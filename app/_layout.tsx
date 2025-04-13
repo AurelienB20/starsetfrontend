@@ -34,7 +34,7 @@ function RootLayoutNav() {
         <AllWorkerPrestationProvider>
           <CurrentWorkerPrestationProvider>
             <ThemeProvider value={MyTheme}>
-              <Stack initialRouteName="starsetScreen">
+              <Stack initialRouteName="index">
                 
                 <Stack.Screen name="starsetScreen"   options={{ headerShown: false }}/>
                 <Stack.Screen name="index"   options={{ headerShown: false }}/>

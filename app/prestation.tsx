@@ -535,19 +535,21 @@ const PrestationScreen = () => {
       
       <Text style={styles.characterCount}>{maxDescriptionLength - description.length} caractères</Text>
 
-      <View style={styles.remunerationContainer}>
-        {prestation?.remuneration ? (
-          <>
-            <Text style={styles.remunerationText}>Rémunération : {prestation?.remuneration} €</Text>
-            <TouchableOpacity style={styles.modifyButton} onPress={() => setModalVisible(true)}>
-              <Text style={styles.modifyButtonText}>Modifier rémunération</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-            <Text style={styles.addButtonText}>Ajouter mes tarifs</Text>
-          </TouchableOpacity>
-        )}
+      
+      {/* Section pour les tarifs */}
+      <View style={styles.tarifSection}>
+        <Text style={styles.tarifTitle}>Ajouter mes tarifs</Text>
+
+        <TouchableOpacity
+          style={prestation?.remuneration ? styles.tarifDisplay : styles.tarifButton}
+          onPress={() => setModalVisible(true)}
+        >
+          {prestation?.remuneration ? (
+            <Text style={styles.tarifText}>{prestation.remuneration} €</Text>
+          ) : (
+            <FontAwesome name="euro" size={30} color="black" />
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* Modal pour la saisie de la rémunération */}
@@ -635,11 +637,17 @@ const PrestationScreen = () => {
     </Modal>
 
       {/* Section pour les horaires */}
-      <View style={styles.availabilityContainer}>
-        <TouchableOpacity style={styles.addButton} onPress={() => {/* Fonction pour ajouter les disponibilités */}}>
-          <Text style={styles.addButtonText}>Ajouter mes disponibilités</Text>
-        </TouchableOpacity>
-      </View>
+      
+      <View style={styles.availabilitySection}>
+  <Text style={styles.availabilityTitle}>Ajouter mes disponibilités</Text>
+  
+  <TouchableOpacity
+    style={styles.availabilityButton}
+    onPress={() => { /* Navigation vers un écran ou une fonction pour gérer les dispos */ }}
+  >
+    <FontAwesome name="calendar" size={30} color="black" />
+  </TouchableOpacity>
+</View>
 
 
       <View style={styles.buttonContainer}>
@@ -775,59 +783,57 @@ const PrestationScreen = () => {
           </TouchableOpacity>
         ) : (
           <View style={styles.certificationForm}>
-            <TextInput
-              style={styles.input}
-              placeholder="Titre de la certification"
-              value={certificationTitle}
-              onChangeText={setCertificationTitle}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Établissement de formation"
-              value={certificationInstitution}
-              onChangeText={setCertificationInstitution}
-            />
-            <TouchableOpacity
-              
-              onPress={() => setShowCalendar(true)}
-            >
-              <Text style={styles.input}>
-                {certificationDate || 'Sélectionnez une date'}
-              </Text>
-            </TouchableOpacity>
-            <TextInput
-              style={styles.input}
-              placeholder="Description"
-              multiline
-              value={certificationDescription}
-              onChangeText={setCertificationDescription}
-            />
-            <TouchableOpacity
-              style={styles.addPhotoButton}
-              onPress={() => {
-                launchImageLibrary({ mediaType: 'photo' }, (response) => {
-                  if (response.assets && response.assets.length > 0) {
-                    setCertificationImage(response.assets[0].uri);
-                  }
-                });
-              }}
-            >
-              <FontAwesome name="camera" size={24} color="gray" />
-              <Text>Ajouter une image</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleAddCertification}
-            >
-              <Text style={styles.submitButtonText}>Valider</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+  <Text style={styles.inputLabel}>Titre</Text>
+  <TextInput
+    style={styles.input}
+    placeholder="Titre de la certification"
+    value={certificationTitle}
+    onChangeText={setCertificationTitle}
+  />
+
+  <Text style={styles.inputLabel}>Établissement de formation</Text>
+  <TextInput
+    style={styles.input}
+    placeholder="Établissement de formation"
+    value={certificationInstitution}
+    onChangeText={setCertificationInstitution}
+  />
+
+  <Text style={styles.inputLabel}>Date</Text>
+  <TouchableOpacity onPress={() => setShowCalendar(true)}>
+    <Text style={[styles.input, {color: certificationDate ? 'black' : '#999'}]}>
+      {certificationDate || 'Sélectionnez une date'}
+    </Text>
+  </TouchableOpacity>
+
+  <Text style={styles.inputLabel}>Description</Text>
+  <TextInput
+    style={[styles.input]}
+    placeholder="Description"
+    multiline
+    value={certificationDescription}
+    onChangeText={setCertificationDescription}
+  />
+
+  <Text style={styles.inputLabel}>Certification</Text>
+  <TouchableOpacity style={styles.addPhotoButton} onPress={() => { /* ouverture image */ }}>
+    {certificationImage ? (
+      <Image source={{ uri: certificationImage }} style={styles.uploadedImage} />
+    ) : (
+      <FontAwesome name="plus" size={30} color="gray" />
+    )}
+  </TouchableOpacity>
+
+  <TouchableOpacity style={styles.submitButton} onPress={handleAddCertification}>
+    <Text style={styles.submitButtonText}>Valider</Text>
+  </TouchableOpacity>
+  <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setCertificationFormVisible(false)}
             >
               <Text style={styles.cancelButtonText}>Annuler</Text>
             </TouchableOpacity>
-          </View>
+</View>
         )}
       </View>
       )}
@@ -1072,8 +1078,9 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignSelf: 'stretch',
-    backgroundColor: '#FFCC00',
+    backgroundColor: '#7ED957',
     paddingVertical: 15,
+    marginHorizontal : 15,
     borderRadius: 10,
     alignItems: 'center',
   },
@@ -1396,8 +1403,87 @@ const styles = StyleSheet.create({
     color: '#000' 
   },
   
+  availabilitySection: {
+    marginVertical: 20,
+    
+  },
+  
+  availabilityTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  
+  availabilityButton: {
+    backgroundColor: '#7ed957', // Vert clair
+    borderRadius: 5,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  tarifSection: {
+    marginVertical: 20,
+    
+  },
+  
+  tarifTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  
+  tarifButton: {
+    backgroundColor: '#f7b500', // Jaune
+    borderWidth: 2,
+    borderColor: 'purple', // Contour violet
+    borderRadius: 10,
+    
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  tarifDisplay: {
+    backgroundColor: '#f7b500',
+    
+    borderRadius: 5,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  tarifText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+
   
   
+  
+
+  inputLabel: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+    marginTop: 10,
+  },
+  
+  certificationImageContainer: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  
+  uploadedImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+  },
 });
 
 export default PrestationScreen;
