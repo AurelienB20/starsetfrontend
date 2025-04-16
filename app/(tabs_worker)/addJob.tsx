@@ -1,13 +1,61 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Animated,
+  Dimensions,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../../config.json';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+const SkeletonLoader = () => {
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
+  const translateX = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-100, SCREEN_WIDTH],
+  });
+
+  return (
+    <View style={styles.jobCard}>
+      <View style={styles.jobImage} />
+      <View style={styles.skeletonTextWrapper}>
+        <View style={styles.skeletonText} />
+        <Animated.View
+          style={[
+            styles.shimmerOverlay,
+            {
+              transform: [{ translateX }],
+            },
+          ]}
+        />
+      </View>
+    </View>
+  );
+};
 
 const AddJobScreen = () => {
   const navigation = useNavigation();
   const [metierNames, setMetierNames] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const getAllMetierNames = async () => {
     try {
@@ -25,58 +73,59 @@ const AddJobScreen = () => {
 
       const data = await response.json();
       setMetierNames(data.metierNames);
-      console.log()
     } catch (error) {
       console.error('Une erreur est survenue lors de la récupération des métiers:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const gotoJobView = async (selectedJob: string) => {
-    // Logique pour aller au chat spécifique
-    
-    
+  const gotoJobView = (selectedJob: string) => {
     navigation.navigate({
       name: 'jobView',
-      params: { selectedJob : selectedJob},
+      params: { selectedJob },
     } as never);
-    // Vous pouvez ici utiliser une navigation ou une autre action
-    // Par exemple, navigation.navigate('ChatScreen', { id: conversationId });
   };
 
   useEffect(() => {
     getAllMetierNames();
   }, []);
 
-  const filteredMetiers = metierNames.filter((metier : any) =>
-    metier.name.toLowerCase().includes(searchTerm.toLowerCase()) // Filtre sur le nom du métier
+  const filteredMetiers = metierNames.filter((metier: any) =>
+    metier.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>ADD A JOB</Text>
 
-      {/* Barre de recherche */}
       <TextInput
         style={styles.searchInput}
         placeholder="Rechercher"
         placeholderTextColor="#808080"
         value={searchTerm}
-        onChangeText={setSearchTerm} // Met à jour le terme de recherche
+        onChangeText={setSearchTerm}
       />
-      {/* Affichage des métiers filtrés */}
-      {filteredMetiers.map((metier : any, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.jobCard}
-          onPress={() => gotoJobView(metier)} // Remplace cette ligne par la navigation si nécessaire
-        >
-          <Image
-            source={{ uri: metier.picture_url ? metier.picture_url : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png' }}
-            style={styles.jobImage}
-          />
-          <Text style={styles.jobTitle}>{metier.name.toUpperCase()}</Text>
-        </TouchableOpacity>
-      ))}
+
+      {loading
+        ? Array.from({ length: 6 }).map((_, index) => <SkeletonLoader key={index} />)
+        : filteredMetiers.map((metier: any, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.jobCard}
+              onPress={() => gotoJobView(metier)}
+            >
+              <Image
+                source={{
+                  uri: metier.picture_url
+                    ? metier.picture_url
+                    : 'https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png',
+                }}
+                style={styles.jobImage}
+              />
+              <Text style={styles.jobTitle}>{metier.name.toUpperCase()}</Text>
+            </TouchableOpacity>
+          ))}
     </ScrollView>
   );
 };
@@ -110,17 +159,39 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     marginBottom: 15,
-    width : '100%'
+    overflow: 'hidden',
   },
   jobImage: {
     width: 50,
     height: 50,
     marginRight: 20,
+    borderRadius: 25,
+    backgroundColor: '#DDD',
   },
   jobTitle: {
     fontSize: 18,
-    fontWeight: 'bold',//
-    flexShrink: 1, // Empêche le débordement du texte
+    fontWeight: 'bold',
+    flexShrink: 1,
+  },
+  skeletonTextWrapper: {
+    flex: 1,
+    height: 20,
+    borderRadius: 4,
+    backgroundColor: '#DDD',
+    overflow: 'hidden',
+  },
+  skeletonText: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#DDD',
+  },
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    width: 100,
+    backgroundColor: 'rgba(255,255,255,0.4)',
   },
 });
 
