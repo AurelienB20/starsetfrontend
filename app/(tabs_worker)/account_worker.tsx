@@ -6,6 +6,7 @@ import config from '../../config.json';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '@/context/userContext';
+import { MaterialIcons } from '@expo/vector-icons';
 
 
 const AccountWorkerScreen = () => {
@@ -68,6 +69,10 @@ const AccountWorkerScreen = () => {
     }
   };
 
+  const goToDocument = async () => {
+    navigation.navigate('document' as never);
+  };
+
   useEffect(() => {
     getProfile();
   }, []);
@@ -111,23 +116,40 @@ const AccountWorkerScreen = () => {
       </View>
 
       <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Aide</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Star Set Premiere</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Paramètres</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Langues</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>À propos</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}  onPress={changeToUser}>
-        <Text style={styles.menuItemText}>Interface User</Text>
-      </TouchableOpacity>
+  <MaterialIcons name="help-outline" size={24} color="#000" style={styles.menuIcon} />
+  <Text style={styles.menuItemText}>Aide</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem}>
+  <MaterialIcons name="star-border" size={24} color="#000" style={styles.menuIcon} />
+  <Text style={styles.menuItemText}>Star Set Premiere</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem}>
+  <MaterialIcons name="settings" size={24} color="#000" style={styles.menuIcon} />
+  <Text style={styles.menuItemText}>Paramètres</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem}>
+  <MaterialIcons name="language" size={24} color="#000" style={styles.menuIcon} />
+  <Text style={styles.menuItemText}>Langues</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem}>
+  <MaterialIcons name="info-outline" size={24} color="#000" style={styles.menuIcon} />
+  <Text style={styles.menuItemText}>À propos</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={goToDocument}>
+  <MaterialIcons name="description" size={24} color="#000" style={styles.menuIcon} />
+  <Text style={styles.menuItemText}>Mes documents</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={changeToUser}>
+  <MaterialIcons name="swap-horiz" size={24} color="#000" style={styles.menuIcon} />
+  <Text style={styles.menuItemText}>Interface User</Text>
+</TouchableOpacity>
+
 
       
     </View>
@@ -189,12 +211,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-  menuItem: {
-    backgroundColor: '#F0F0F0',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
+ 
   menuItemText: {
     fontSize: 16,
     color: '#000',
@@ -240,6 +257,18 @@ const styles = StyleSheet.create({
     width: 40,  // Taille de l’icône tirelire
     height: 40,
     marginRight: 10, // Espacement avec le montant
+  },
+
+  menuIcon: {
+    marginRight: 10,
+  },
+  menuItem: {
+    flexDirection: 'row', // Pour afficher icône + texte en ligne
+    alignItems: 'center',
+    backgroundColor: '#F0F0F0',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
   },
 
 });

@@ -249,6 +249,12 @@ const HomeScreen = () => {
     return <CategoryItem item={item} />;
   };
 
+  const CategorySkeleton = () => (
+    <View style={[styles.categoryContainer, styles.skeleton]}>
+      <View style={styles.skeletonOverlay} />
+    </View>
+  );
+
   useEffect(() => {
     fetchCategories();
     loadRecentSearches();
@@ -341,7 +347,14 @@ const HomeScreen = () => {
           nestedScrollEnabled={true} // Permet le scrolling imbriqué
         />
       ): loading ? (
-        <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
+        <>
+          <Text style={styles.sectionTitle}>En ce moment</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <CategorySkeleton key={index} />
+            ))}
+          </View>
+        </>
       ) : (
         <>
           <Text style={styles.sectionTitle}>En ce moment</Text>
@@ -351,6 +364,7 @@ const HomeScreen = () => {
             keyExtractor={(item : any) => item.name}
             numColumns={2}
             columnWrapperStyle={styles.row}
+            showsVerticalScrollIndicator={false} //
           />
         </>
       )}
@@ -579,6 +593,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     
   },
+
+  skeleton: {
+    backgroundColor: '#e0e0e0',
+    overflow: 'hidden',
+  },
+  
+  skeletonOverlay: {
+    flex: 1,
+    backgroundColor: '#ccc',
+    opacity: 0.3,
+  },
+  
 
 });
 

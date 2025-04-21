@@ -10,15 +10,18 @@ import {
   Animated,
   Dimensions,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import moment from 'moment';
 import 'moment-timezone';
 import { useNavigation } from '@react-navigation/native';
 import config from '../../config.json';
+import { FontAwesome } from '@expo/vector-icons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const SkeletonMessage = () => {
+  
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -55,6 +58,7 @@ const SkeletonMessage = () => {
 };
 
 const ConversationScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
   const [conversations, setConversations] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -145,11 +149,19 @@ const ConversationScreen = () => {
           style={styles.messagerie}
         />
       </View>
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Rechercher"
-        placeholderTextColor="#666"
-      />
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Rechercher"
+          placeholderTextColor="#666"
+        />
+        <TouchableOpacity style={styles.searchButton} onPress={() => setModalVisible(true)}>
+          <View style = {styles.searchButton}>
+            <FontAwesome name="user" size={25} color="#000" style={styles.searchIcon} />
+          </View>
+        
+        </TouchableOpacity>
+      </View>
 
       {isLoading ? (
         <>
@@ -164,6 +176,50 @@ const ConversationScreen = () => {
           keyExtractor={(item) => item.id.toString()}
         />
       )}
+
+
+<Modal
+  transparent={true}
+  animationType="slide"
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={styles.modalBackground}>
+    <View style={styles.modalContainer}>
+      <Text style={styles.modalTitle}>Demandes de conversation</Text>
+      <FlatList
+        data={conversations}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.modalMessageItem}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image
+                source={{ uri: item.profile_picture_url }}
+                style={styles.profileImage}
+              />
+              <View style={{ marginLeft: 10, flex: 1 }}>
+                <Text style={styles.name}>{item.firstname}</Text>
+                <Text style={styles.message}>{item.message_text}</Text>
+              </View>
+            </View>
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity style={styles.acceptButton}>
+                <Text style={styles.buttonText}>Accepter</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.rejectButton}>
+                <Text style={styles.buttonText}>Refuser</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      />
+      <TouchableOpacity style={styles.modalClose} onPress={() => setModalVisible(false)}>
+        <Text style={styles.modalCloseText}>Fermer</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
     </View>
   );
 };
@@ -175,13 +231,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 40,
   },
-  searchBar: {
-    height: 40,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 20,
-  },
+  
   messageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -239,6 +289,111 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'rgba(255,255,255,0.4)',
   },
+
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent : 'center',
+    borderRadius: 10,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+    //backgroundColor : 'blue'
+    
+  },
+  
+  searchBar: {
+    width : '90%',
+    height: 40,
+    color: '#000',
+    backgroundColor: '#F0F0F0',
+    borderRadius: 10,
+    
+    paddingHorizontal : 10,
+    marginRight : 10  
+    
+  },
+  
+  searchButton: {
+    padding: 2,
+    backgroundColor : '#F0F0F0',
+    alignItems : 'center',
+    justifyContent : 'center',
+    
+    borderRadius : 10,
+    width : 35,
+    height : 35
+
+  },
+  
+  searchIcon: {
+    
+  },
+
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+  },
+  
+  modalContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  
+  modalMessageItem: {
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 10,
+  },
+  
+  modalButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  
+  acceptButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  
+  rejectButton: {
+    backgroundColor: '#F44336',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  
+  modalClose: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  
+  modalCloseText: {
+    color: '#007BFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  
+
 });
 
 export default ConversationScreen;

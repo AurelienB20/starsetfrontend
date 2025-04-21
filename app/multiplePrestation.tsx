@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,40 +9,70 @@ import {
   Modal,
   Alert,
 } from 'react-native';
+import config from '../config.json';
+import { useAllWorkerPrestation, useCurrentWorkerPrestation }  from '@/context/userContext';
 
-const PrestationsScreen = () => {
-  const [prestations, setPrestations] = useState([
-    { id: '1', title: 'Spectacle Enfant Thème Disney', price: '50,00€' },
-  ]);
+const PrestationsScreen = ({ route }: any) => {
+  
+
+  const [customPrestations, setCustomPrestations] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newPrestation, setNewPrestation] = useState({ title: '', price: '', description: '' });
+  const { currentWorkerPrestation: prestation, setCurrentWorkerPrestation } = useCurrentWorkerPrestation();
 
-  const handleAddPrestation = () => {
-    if (!newPrestation.title || !newPrestation.price) {
-      Alert.alert('Erreur', 'Veuillez remplir tous les champs.');
-      return;
+  const getCustomPrestations = async () => {
+    try {
+      
+      const response = await fetch(`${config.backendUrl}/api/prestation/get-all-custom-prestation-by-prestation-id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prestation_id : prestation?.id }),
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      const data = await response.json();
+      setCustomPrestations(data.custom_prestations);
+    } catch (error) {
+      console.error('Erreur chargement prestations personnalisées:', error);
     }
-    setPrestations([
-      ...prestations,
-      {
-        id: Math.random().toString(),
-        title: newPrestation.title,
-        price: `${newPrestation.price}€`,
-        //description: newPrestation.description,
-      },
-    ]);
-    setNewPrestation({ title: '', price: '', description: '' });
-    setModalVisible(false);
   };
 
-  const renderPrestation = ({ item } : any) => (
+  const createCustomPrestation = async () => {
+    try {
+      const response = await fetch(`${config.backendUrl}/api/prestation/create-prestation-custom`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prestation_id : prestation?.id,
+          title: newPrestation.title,
+          description: newPrestation.description,
+          price: newPrestation.price,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Erreur réseau');
+
+      const data = await response.json();
+      setCustomPrestations((prev ) : any => [...prev, data.custom_prestation]);
+      setNewPrestation({ title: '', price: '', description: '' });
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Erreur création prestation custom:', error);
+      Alert.alert('Erreur', 'Impossible de créer la prestation personnalisée.');
+    }
+  };
+
+  useEffect(() => {
+    if (prestation?.id) getCustomPrestations();
+  }, [prestation?.id]);
+
+  const renderPrestation = ({ item }: any) => (
     <View style={styles.prestationCard}>
-        <Text style={styles.prestationTitle}>PRESTATION 1</Text>
-        <Text style={styles.prestationTitle}>{item.title}</Text>
-        <View style={styles.prestationPriceContainer}>
-            <Text style={styles.prestationPrice}>{item.price}</Text>
-        </View>
-        
+      <Text style={styles.prestationTitle}>{item.title}</Text>
+      <View style={styles.prestationPriceContainer}>
+        <Text style={styles.prestationPrice}>{item.price}€</Text>
+      </View>
     </View>
   );
 
@@ -50,29 +80,21 @@ const PrestationsScreen = () => {
     <View style={styles.container}>
       <Text style={styles.header}>TARIF PAR PRESTATION</Text>
       <FlatList
-        data={prestations}
+        data={customPrestations}
         renderItem={renderPrestation}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item : any) => item?.id}
         contentContainerStyle={styles.listContainer}
       />
 
-      {/* Bouton pour afficher la modal */}
       <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
         <Text style={styles.addButtonText}>Ajouter une prestation</Text>
       </TouchableOpacity>
 
-      {/* Modal */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
+      <Modal visible={modalVisible} animationType="slide" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalHeader}>AJOUTER UNE PRESTATION</Text>
 
-            {/* Titre */}
             <Text style={styles.label}>Titre</Text>
             <TextInput
               style={styles.input}
@@ -81,7 +103,6 @@ const PrestationsScreen = () => {
               onChangeText={(text) => setNewPrestation({ ...newPrestation, title: text })}
             />
 
-            {/* Description */}
             <Text style={styles.label}>Description</Text>
             <TextInput
               style={styles.input}
@@ -90,7 +111,6 @@ const PrestationsScreen = () => {
               onChangeText={(text) => setNewPrestation({ ...newPrestation, description: text })}
             />
 
-            {/* Tarifs */}
             <Text style={styles.label}>Ajouter le tarif</Text>
             <TextInput
               style={styles.input}
@@ -100,15 +120,11 @@ const PrestationsScreen = () => {
               onChangeText={(text) => setNewPrestation({ ...newPrestation, price: text })}
             />
 
-            {/* Boutons */}
             <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.saveButton} onPress={handleAddPrestation}>
+              <TouchableOpacity style={styles.saveButton} onPress={createCustomPrestation}>
                 <Text style={styles.saveButtonText}>Enregistrer</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setModalVisible(false)}
-              >
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
                 <Text style={styles.cancelButtonText}>Annuler</Text>
               </TouchableOpacity>
             </View>
@@ -120,23 +136,9 @@ const PrestationsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  header: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#008000',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  listContainer: {
-    flexGrow: 1,
-    justifyContent: 'flex-start'
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 20, paddingTop: 20 },
+  header: { fontSize: 20, fontWeight: 'bold', color: '#008000', textAlign: 'center', marginBottom: 20 },
+  listContainer: { flexGrow: 1 },
   prestationCard: {
     backgroundColor: '#F0F0F0',
     borderRadius: 10,
@@ -150,21 +152,18 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
   },
+  prestationPriceContainer: {
+    backgroundColor: '#FFD700',
+    marginTop: 5,
+    width: '100%',
+    borderRadius: 3,
+  },
   prestationPrice: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
-    margin : 5,
-     textAlign : 'center'
-  },
-  prestationPriceContainer: {
-    
-    fontWeight: 'bold',
-    backgroundColor : '#FFD700',
-    marginTop: 5,
-    width : '100%',
-    borderRadius : 3
-   
+    margin: 5,
+    textAlign: 'center',
   },
   addButton: {
     backgroundColor: '#008000',

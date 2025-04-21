@@ -9,6 +9,8 @@ import config from '../config.json';
 import { useFonts } from 'expo-font';
 import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { Lexend_400Regular, Lexend_700Bold } from '@expo-google-fonts/lexend';
+import { JosefinSans_700Bold, JosefinSans_100Thin} from '@expo-google-fonts/josefin-sans';
+
 
 const PrestationViewScreen = () => {
   const [selectedTab, setSelectedTab] = useState('photos'); // Onglet par défaut: 'photos'
@@ -44,12 +46,11 @@ const PrestationViewScreen = () => {
 
   const [arrivalHour, setArrivalHour] = useState('');
   const [arrivalMinute, setArrivalMinute] = useState('');
-
   const [departureHour, setDepartureHour] = useState('');
   const [departureMinute, setDepartureMinute] = useState('');
   const [selectedMetier, setSelectedMetier] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [modalType, setModalType] = useState<string | null>(null); // 'date', 'arrival', 'departure'
+  const [modalType, setModalType] = useState<string | null>('date'); // 'date', 'arrival', 'departure'
   
     const profileImageSize = scrollY.interpolate({
       inputRange: [0, 70],
@@ -61,6 +62,8 @@ const PrestationViewScreen = () => {
       BebasNeue_400Regular,
       Lexend_400Regular,
       Lexend_700Bold,
+      JosefinSans_700Bold,
+      JosefinSans_100Thin,
     });
 
   const photos = [
@@ -114,6 +117,14 @@ const PrestationViewScreen = () => {
     setDatePickerVisible(!isDatePickerVisible); // Toggle the visibility of the date picker
   };
 
+  const goToChoosePrestation = async () => {
+    
+    navigation.navigate({
+      name: 'choosePrestation',
+      params: { prestation_id },
+    } as never);
+  };
+
   const toggleArrivalTimePicker = () => {
     //setCalendarVisible(false)
     //setArrivalTimePickerVisible(!isArrivalTimePickerVisible);
@@ -132,9 +143,9 @@ const PrestationViewScreen = () => {
   };
 
   const toggleCalendar = () => {
-    //setCalendarVisible(!isCalendarVisible); // Toggle the visibility of the calendar
-    //console.log(1)
-    openModal('date'); // Ouvre le modal pour la sélection de la date
+   
+    setCalendarVisible(!isCalendarVisible); // Toggle the visibility of the calendar
+    
   };
 
   const handleDateSelect = (day : any) => {
@@ -212,6 +223,10 @@ const PrestationViewScreen = () => {
 
       if (data.exists) {
         // Si la conversation existe, on va directement au chat
+        console.log("135")
+        console.log(data)
+        console.log(data.conversation_id)
+
         goToChat(data.conversation_id);
       } else {
         // Sinon, on affiche le pop-up de confirmation
@@ -300,7 +315,7 @@ const PrestationViewScreen = () => {
     const account_id = await getAccountId()
     navigation.navigate({
       name: 'chat',
-      params: {conversation_id : conversation_id , sender_id : account_id , sender_type : 'user'},
+      params: {conversation_id : conversation_id , sender_id : account_id , sender_type : 'user', contact_profile_picture_url : profilePictureUrl},
     } as never);
   
   }
@@ -476,13 +491,21 @@ const PrestationViewScreen = () => {
     >
       {metiers.map((item : any, index: any) => (
         <TouchableOpacity
-        key={index}
-        style={[styles.tag, selectedTag === item.metier && styles.selectedTag]}
-        onPress={() => goToOtherPrestation(item.id, item.metier)}
-      >
-        <Text style={[styles.tagText, selectedTag === item.metier && styles.selectedTagText]}>
-          {item.metier.includes(' ') ? `${item.metier.split(' ')[0]}...` : item.metier}
-        </Text>
+          key={index}
+          style={[styles.tag, selectedTag === item.metier && styles.selectedTag]}
+          onPress={() => goToOtherPrestation(item.id, item.metier)}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {item.picture_url && (
+              <Image
+                source={{ uri: item.picture_url }}
+                style={{ width: 16, height: 16, marginRight: 6, borderRadius: 8 }}
+              />
+            )}
+            <Text style={[styles.tagText, selectedTag === item.metier && styles.selectedTagText]}>
+              {item.metier.includes(' ') ? `${item.metier.split(' ')[0]}...` : item.metier}
+            </Text>
+          </View>
       </TouchableOpacity>
       ))}
     </ScrollView>
@@ -600,128 +623,26 @@ const PrestationViewScreen = () => {
         <View style={styles.diagonal2} />
       </View>
 
+      <View style={styles.seeMoreContainer}>
+        <TouchableOpacity style={styles.seeMoreButton} onPress={goToChoosePrestation}>
+          <Text style={styles.seeMoreText}>Voir les autres prestations</Text>
+          <Icon name="arrow-forward" size={20} color="white" style={{ marginLeft: 10 }} />
+        </TouchableOpacity>
+
+        {/* Flèches jaunes façon triangle à droite */}
+        <View style={styles.seeMoreDiagonal} />
+        <View style={styles.seeMoreDiagonal2} />
+      </View>
+
       
 
       {/* Date Picker Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={false}
-        onRequestClose={toggleCalendar}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {/* Petite croix pour fermer le modal */}
-            <TouchableOpacity onPress={toggleCalendar} style={styles.closeIcon}>
-              <Icon name="close" size={24} color="#000" />
-            </TouchableOpacity>
-
-            <Text style={styles.modalTitle}>Choisissez une date</Text>
-            <Calendar
-              onDayPress={handleDateSelect}
-              markingType="period" // Utiliser le marquage de période
-              markedDates={getMarkedDates()}
-              style={styles.calendar}
-            />
-
-            {/* Bouton Horaires */}
-            <TouchableOpacity onPress={toggleArrivalTimePicker} style={styles.horairesButton}>
-              <Text style={styles.horairesButtonText}>Horaires</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      
 
       
             {/* Custom Time Input Modal */}
         {/* Arrival Time Input Modal */}
-      <Modal animationType="none" transparent={true} visible={isArrivalTimePickerVisible} onRequestClose={toggleArrivalTimePicker}>
-        <View style={styles.timePickerModalContainer}>
-          <View style={styles.timePickerContent}>
-            <TouchableOpacity onPress={toggleArrivalTimePicker} style={styles.closeIcon}>
-              <Icon name="close" size={24} color="#000" />
-            </TouchableOpacity>
-            <Text style={styles.timePickerTitle}>ARRIVÉE</Text>
-
-            <View style={styles.inputRow}>
-              {/* Hour Input for Arrival */}
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                maxLength={2}
-                placeholder="HH"
-                value={arrivalHour}
-                onChangeText={(text) => handleHourChange(text, setArrivalHour)}
-              />
-              <Text style={styles.timeSeparator}>:</Text>
-              {/* Minute Input for Arrival */}
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                maxLength={2}
-                placeholder="MM"
-                value={arrivalMinute}
-                onChangeText={(text) => handleMinuteChange(text, setArrivalMinute)}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={styles.nextButton}
-              onPress={() => {
-                
-                toggleDepartureTimePicker(); // Show the departure time picker
-              }}
-            >
-              <Text style={styles.nextButtonText}>Suivant</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Departure Time Input Modal */}
-      <Modal animationType="none" transparent={true} visible={isDepartureTimePickerVisible} onRequestClose={toggleDepartureTimePicker}>
-        <View style={styles.timePickerModalContainer}>
-          <View style={styles.timePickerContent}>
-            {/* Back Arrow instead of Close Icon */}
-            <TouchableOpacity onPress={() => {
-              toggleDepartureTimePicker();
-              
-            }} style={styles.backIcon}>
-              <Icon name="arrow-back" size={24} color="#000" />
-            </TouchableOpacity>
-            <Text style={styles.timePickerTitle}>DÉPART</Text>
-
-            <View style={styles.inputRow}>
-              {/* Hour Input for Departure */}
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                maxLength={2}
-                placeholder="HH"
-                value={departureHour}
-                onChangeText={(text) => handleHourChange(text, setDepartureHour)}
-              />
-              <Text style={styles.timeSeparator}>:</Text>
-              {/* Minute Input for Departure */}
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                maxLength={2}
-                placeholder="MM"
-                value={departureMinute}
-                onChangeText={(text) => handleMinuteChange(text, setDepartureMinute)}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={styles.nextButton}
-              onPress={() => goToSummary()}
-            >
-              <Text style={styles.nextButtonText}>Confirmer</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      
 
       <Modal
         visible={isImageModalVisible}
@@ -911,11 +832,10 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 24,
-    fontWeight: 'bold',
     color: '#000',
     marginTop: 10,
     textAlign : 'center',
-
+    fontFamily : 'JosefinSans_700Bold'
   },
   profileDescription: {
     fontSize: 16,
@@ -1080,7 +1000,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 120,
+    //marginBottom: 120,
     backgroundColor: 'green',
     height: 100,
     marginHorizontal: 10,
@@ -1457,6 +1377,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
+
+  seeMoreContainer: {
+    backgroundColor: '#FFD700',
+    marginHorizontal: 10,
+    
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 120,
+    marginTop: 10,
+    paddingRight : 60
+  },
+  
+  seeMoreButton: {
+    flexDirection: 'row',
+    //alignItems: 'space-between',
+  
+    justifyContent: 'space-between',
+  },
+  
+  seeMoreText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#fff',
+  },
+  
+  seeMoreDiagonal: {
+    position: 'absolute',
+    right: -35,
+    top: -35,
+    width: 70,
+    height: 70,
+    backgroundColor: '#FFFFFF',
+    transform: [{ rotate: '45deg' }],
+  },
+  
+  seeMoreDiagonal2: {
+    position: 'absolute',
+    right: -35,
+    bottom: -35,
+    width: 70,
+    height: 70,
+    backgroundColor: '#FFFFFF',
+    transform: [{ rotate: '45deg' }],
+  },
+  
 });
 
 export default PrestationViewScreen;

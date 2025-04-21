@@ -87,19 +87,31 @@ export default function TabNavigator() {
         }}
       />
       <Tabs.Screen
-        name="addJob"
-        
-        options={{
-          title: '',
-          tabBarIcon: ({ color }) => <TabBarIcon name="plus" color={color} />,
-        }}
-      />
+  name="addJob"
+  options={{
+    title: '',
+    tabBarIcon: ({ color }) => (
+      <View style={{
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: '#FFF',
+        borderColor: color,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <FontAwesome name="plus" size={18} color={color} />
+      </View>
+    ),
+  }}
+/>
       <Tabs.Screen
         name="conversation"
         
         options={{
           title: '',
-          tabBarIcon: ({ color }) => <TabBarIcon name="comments" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="envelope-o" color={color} />,
         }}
       />
       <Tabs.Screen

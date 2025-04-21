@@ -63,6 +63,10 @@ const AccountScreen = () => {
     navigation.navigate('verificationCode' as never);
   };
 
+  const goToValidation = async () => {
+    navigation.navigate('validation' as never);
+  };
+
   const goToAvailability = async () => {
     navigation.navigate('availability' as never);
   };
@@ -235,37 +239,76 @@ const AccountScreen = () => {
       </View>
 
       <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Aide</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToHistory}>
-        <Text style={styles.menuItemText}>Historique</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Paramètres</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText}>Langues</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToAvailability}>
-        <Text style={styles.menuItemText}>Availability</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToDocument}>
-        <Text style={styles.menuItemText}>Document</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem}>
-        <Text style={styles.menuItemText} onPress={openHistoryModal}>en cours</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={goToVerificationCode}>
-        <Text style={styles.menuItemText}>verificationCode</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.menuItem} onPress={changeToWorker}>
-        <Text style={styles.menuItemText}>Interface Worker</Text>
-      </TouchableOpacity>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="question-circle" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Aide</Text>
+  </View>
+</TouchableOpacity>
 
-      {/* Bouton pour afficher le popup de déconnexion */}
-      <TouchableOpacity style={styles.menuItem} onPress={() => setIsModalVisible(true)}>
-        <Text style={styles.deconnectText}>Se déconnecter</Text>
-      </TouchableOpacity>
+<TouchableOpacity style={styles.menuItem} onPress={goToHistory}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="history" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Historique</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="cogs" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Paramètres</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="language" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Langues</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={goToAvailability}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="calendar-check-o" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Availability</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={goToDocument}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="file-text" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Document</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={openHistoryModal}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="clock-o" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>En cours</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={goToValidation}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="check-circle" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Validation</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={changeToWorker}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="user" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Interface Worker</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={() => setIsModalVisible(true)}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="sign-out" size={20} color="red" style={styles.menuIcon} />
+    <Text style={styles.deconnectText}>Se déconnecter</Text>
+  </View>
+</TouchableOpacity>
+
+      
 
       {/* Modal de confirmation de déconnexion */}
       </ScrollView>
@@ -549,11 +592,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginVertical: 10,
   },
+  
   missionInProgressText: {
     marginLeft: 10,
     fontSize: 16,
     color: '#333',
   },
+
   inProgressCloseButton: {
     backgroundColor: '#FF3B30',
     padding: 15,
@@ -639,10 +684,19 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 5,
   },
+
   statusText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 12,
+  },
+
+  iconWithText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuIcon: {
+    marginRight: 10,
   },
 });
 

@@ -41,7 +41,7 @@ const PaymentScreen = () => {
     console.log("user_id")
     console.log(user_id)
     try {
-      const response = await fetch(`${config.backendUrl}/api/mission/create-planned-prestation`, {
+      const response = await fetch(`${config.backendUrl}/api/planned-prestation/create-planned-prestation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,11 +63,8 @@ const PaymentScreen = () => {
       console.log(data);
 
       if (data.success) {
-        Alert.alert("Succès", "Prestation planifiée avec succès !");
-        navigation.navigate({
-          name: '(tabs)',
-          params: { screen: 'home' },
-        } as never);
+        
+        navigation.navigate('validation' as never);
       } else {
         Alert.alert("Erreur", "Une erreur est survenue lors du paiement.");
       }

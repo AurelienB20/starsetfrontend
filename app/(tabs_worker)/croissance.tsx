@@ -1,33 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  FlatList,
+} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import config from '../../config.json';
 
 const CroissanceScreen = () => {
-  const [jobsOfTheDay, setJobsOfTheDay] = useState([]);
+  const [jobsOfTheDay, setJobsOfTheDay] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const news = {
-    title: "Big Announcement",
-    date: "September 22, 2024",
-    description: "We are excited to introduce new features to our platform that will make your job search easier and more efficient!"
+    title: 'Big Announcement',
+    date: 'September 22, 2024',
+    description:
+      'We are excited to introduce new features to our platform that will make your job search easier and more efficient!',
   };
 
   const fetchJobsOfTheDay = async () => {
     try {
       const response = await fetch(`${config.backendUrl}/api/mission/get-job-of-the-day`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch jobs');
-      }
+      if (!response.ok) throw new Error('Failed to fetch jobs');
 
       const data = await response.json();
-      setJobsOfTheDay(data.metiers || []);
+      setJobsOfTheDay([...data.metiers, ...data.metiers]); // doublage temporaire
     } catch (error) {
       console.error('Erreur lors de la récupération des jobs:', error);
     } finally {
@@ -36,21 +40,33 @@ const CroissanceScreen = () => {
   };
 
   useEffect(() => {
-    
-
     fetchJobsOfTheDay();
   }, []);
+
+  const workersMock = [
+    'https://img.20mn.fr/wb0GX0XqSd2N4Y3ItfLEGik/1444x920_squeezie-youtubeur-chanteur-et-desormais-auteur-de-bd',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwwXfPD8d-KenzH6diGi3tKJu9liPKonRhgw&s',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrZEnI6ULp75xTWZpfj0mTHaebwUDaiE0OBA&s',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSicKbK7hKK2PMZLyJBtbec1a1vMTGwV0GTOg&s',
+  ];
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.croissanceContainer}>
-        <Image source={{uri : 'http://109.176.199.54/images/icon/croissance_header.png'}} style={styles.croissance} />
+        <Image
+          source={{ uri: 'http://109.176.199.54/images/icon/croissance_header.png' }}
+          style={styles.croissance}
+        />
       </View>
-      
-      
+
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/864/864685.png'}} style={styles.icon} />
+          <Image
+            source={{
+              uri: 'https://cdn-icons-png.flaticon.com/512/864/864685.png',
+            }}
+            style={styles.icon}
+          />
           <Text style={styles.statText}>TOP JOB</Text>
         </View>
         <View style={styles.statItem}>
@@ -63,52 +79,69 @@ const CroissanceScreen = () => {
         </View>
       </View>
 
-      <Text style={styles.sectionHeader}>WORKERS OF THE DAY</Text>
-      <View style={styles.workersContainer}>
-        <Image source={{uri: 'https://img.20mn.fr/wb0GX0XqSd2N4Y3ItfLEGik/1444x920_squeezie-youtubeur-chanteur-et-desormais-auteur-de-bd'}} style={styles.workerImage} />
-        <Image source={{uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwwXfPD8d-KenzH6diGi3tKJu9liPKonRhgw&s'}} style={styles.workerImage} />
-        <Image source={{uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrZEnI6ULp75xTWZpfj0mTHaebwUDaiE0OBA&s'}} style={styles.workerImage} />
-        <Image source={{uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSicKbK7hKK2PMZLyJBtbec1a1vMTGwV0GTOg&s'}} style={styles.workerImage} />
+      <Text style={[styles.sectionHeader, { marginTop: 40 }]}>WORKERS OF THE DAY</Text>
+<FlatList
+  horizontal
+  data={[...workersMock, ...workersMock]}
+  keyExtractor={(_, index) => index.toString()}
+  renderItem={({ item }) => (
+    <View style={styles.workerWrapper}>
+      <Image source={{ uri: item }} style={styles.workerImage} />
+      <View style={styles.badge}>
+        <FontAwesome name="check" size={12} color="#fff" />
       </View>
+    </View>
+  )}
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={{ paddingRight: 20 }}
+/>
 
-      <Text style={styles.sectionHeader}>JOBS OF THE DAY</Text>
-      <View style={styles.jobsContainer}>
-          {jobsOfTheDay.length > 0 ? (
-            jobsOfTheDay.map((job : any, index) => (
-              <View key={index} style={styles.jobItem}>
-                <Image source={{ uri: job.picture_url || 'https://cdn-icons-png.flaticon.com/512/91/91501.png' }} style={styles.jobIcon} />
-                <Text style={styles.jobText}>{job.name}</Text>
-              </View>
-            ))
-          ) : (
-            <Text >Aucun job disponible</Text>
-          )}
-        </View>
+<Text style={[styles.sectionHeader, { marginTop: 30 }]}>JOBS OF THE DAY</Text>
+<FlatList
+  horizontal
+  data={jobsOfTheDay}
+  keyExtractor={(_, index) => index.toString()}
+  renderItem={({ item }) => (
+    <View style={styles.jobItem}>
+      <Image
+        source={{
+          uri: item.picture_url || 'https://cdn-icons-png.flaticon.com/512/91/91501.png',
+        }}
+        style={styles.jobIcon}
+      />
+      <Text style={styles.jobText}>{item.name}</Text>
+    </View>
+  )}
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={{ paddingRight: 20 }}
+/>
 
-      <Text style={styles.sectionHeader}>CES JOBS QUI ONT BESOIN DE VOUS</Text>
-      <View style={styles.jobsContainer}>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/4703/4703487.png'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>DEV WEB</Text>
-        </View>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/864/864685.png'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>LECTURE</Text>
-        </View>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/846/846338.png'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>CHAUFFEUR</Text>
-        </View>
-        <View style={styles.jobItem}>
-          <Image source={{uri: 'https://cdn-icons-png.flaticon.com/512/2793/2793765.png'}} style={styles.jobIcon} />
-          <Text style={styles.jobText}>TRADUCTEUR</Text>
-        </View>
-      </View>
+<Text style={[styles.sectionHeader, { marginTop: 30 }]}>CES JOBS QUI ONT BESOIN DE VOUS</Text>
+<FlatList
+  horizontal
+  data={[
+    { name: 'DEV WEB', icon: 'https://cdn-icons-png.flaticon.com/512/4703/4703487.png' },
+    { name: 'LECTURE', icon: 'https://cdn-icons-png.flaticon.com/512/864/864685.png' },
+    { name: 'CHAUFFEUR', icon: 'https://cdn-icons-png.flaticon.com/512/846/846338.png' },
+    { name: 'TRADUCTEUR', icon: 'https://cdn-icons-png.flaticon.com/512/2793/2793765.png' },
+  ]}
+  keyExtractor={(item, index) => index.toString()}
+  renderItem={({ item }) => (
+    <View style={styles.jobItem}>
+      <Image source={{ uri: item.icon }} style={styles.jobIcon} />
+      <Text style={styles.jobText}>{item.name}</Text>
+    </View>
+  )}
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={{ paddingRight: 20 }}
+/>
 
-      <Text style={styles.sectionHeader}>STARSET NEWS</Text>
+      <Text style={[styles.sectionHeader, {textAlign : 'left'}]}>STARSET NEWS</Text>
       <View style={styles.newsCard}>
         <View style={styles.newsHeader}>
-          <Text style={styles.newsTitle}>{news.title} <FontAwesome name="smile-o" size={20} /></Text>
+          <Text style={styles.newsTitle}>
+            {news.title} <FontAwesome name="smile-o" size={20} />
+          </Text>
           <Text style={styles.newsDate}>{news.date}</Text>
         </View>
         <Text style={styles.newsDescription}>{news.description}</Text>
@@ -122,28 +155,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#FFFFFF',
-    marginTop : 20
+    marginTop: 20,
   },
-  
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
+  croissance: {
+    resizeMode: 'contain',
+    height: 80,
+    marginBottom: 30,
+    width: '80%',
+  },
+  croissanceContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 30,
-    
   },
   statItem: {
     flexDirection: 'column',
-    
     alignItems: 'center',
     paddingBottom: 10,
     justifyContent: 'flex-end',
-    
   },
   statText: {
     fontSize: 14,
@@ -163,17 +197,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#000',
+    marginTop : 20,
+    textAlign : 'center'
+
   },
-  workersContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 30,
-  },
+  
   workerImage: {
     width: 80,
     height: 80,
     borderRadius: 10,
   },
+  
   jobsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -182,22 +216,23 @@ const styles = StyleSheet.create({
   },
   jobItem: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginRight: 15,
     backgroundColor: '#E3E3E3',
     borderRadius: 6,
     padding: 10,
     paddingHorizontal: 10,
-    width: '23%',
-    aspectRatio: 1
+    width: 90,
   },
   jobIcon: {
-    width: '70%',
-    aspectRatio: 1,
+    width: 40,
+    height: 40,
+    marginBottom: 5,
   },
   jobText: {
     fontSize: 10,
     color: '#000',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   newsCard: {
     backgroundColor: '#f5f5f5',
@@ -225,20 +260,20 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 
-  croissance : {
-    
-    resizeMode : 'contain',
-    height : 80,
-    marginBottom : 30,
-    width : '80%',
+  badge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#FFD700',
+    borderRadius: 10,
+    padding: 4,
+    zIndex: 2,
   },
-
-  croissanceContainer : {
-    width : '100%',
-    justifyContent : 'center',
-    alignItems : 'center',
-    
-  }
+  workerWrapper: {
+    marginRight: 15,
+    position: 'relative',
+    paddingBottom: 5, // évite que le badge dépasse du FlatList
+  },
 });
 
 export default CroissanceScreen;

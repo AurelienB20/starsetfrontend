@@ -7,7 +7,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useState } from 'react';
@@ -31,6 +31,10 @@ export default function TabLayout() {
   const goToWorkerTabs = async () => {
     navigation.navigate('(tabs_worker)' as never);
   };
+
+  function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string; }) {
+    return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  }
   return (
     <>
     <Tabs
@@ -79,7 +83,7 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: ({ color }) => (
-            <FontAwesome5 name="brain" size={24} color={color} />
+            <FontAwesome5 name="headset" size={24} color={color} />
           )
         }}
       />
@@ -87,7 +91,7 @@ export default function TabLayout() {
         name="conversation"
         options={{
           title: '',
-          tabBarIcon: ({ color }) => <Ionicons name="chatbubbles-outline" size={28} color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="envelope-o" color={color} />,
         }}
       />
       <Tabs.Screen

@@ -51,6 +51,11 @@ const PrestationScreen = () => {
   const { allWorkerPrestation, setAllWorkerPrestation } = useAllWorkerPrestation();
   const [showCalendar, setShowCalendar] = useState(false);
 
+  const [showExperienceForm, setShowExperienceForm] = useState(false);
+  const [showExperienceCalendar, setShowExperienceCalendar] = useState(false);
+  const [experienceDate, setExperienceDate] = useState('');
+
+
   const route = useRoute() as any;
   const prestation_id = route.params?.id;
 
@@ -68,6 +73,10 @@ const PrestationScreen = () => {
       { uri: 'https://images.pexels.com/photos/1104012/pexels-photo-1104012.jpeg' },
       { uri: 'https://images.pexels.com/photos/167699/pexels-photo-167699.jpeg' }
     ],
+  };
+
+  const goToAvailability = async () => {
+    navigation.navigate('availability' as never);
   };
 
   const getWorkerId = async () => {
@@ -89,6 +98,23 @@ const PrestationScreen = () => {
     const formatted = moment(day.dateString).format('DD/MM/YYYY');
     setCertificationDate(formatted);
     setShowCalendar(false);
+  };
+
+  const handleExperienceDateSelect = (day: any) => {
+    const formatted = moment(day.dateString).format('DD/MM/YYYY');
+    setExperienceDate(formatted);
+    setShowExperienceCalendar(false);
+  };
+  
+  const getExperienceMarkedDates = () => {
+    if (!experienceDate) return {};
+    const dateISO = moment(experienceDate, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    return {
+      [dateISO]: {
+        selected: true,
+        selectedColor: '#00cc66',
+      },
+    };
   };
 
   const getMarkedDates = () => {
@@ -383,6 +409,10 @@ const PrestationScreen = () => {
     setImageModalVisible(false);
   };
 
+  const goToMultiplePrestation = () => {
+    navigation.navigate('multiplePrestation' as never) 
+  }
+
   const handleAddCertification = async () => {
     try {
       const newCertification = {
@@ -521,7 +551,15 @@ const PrestationScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.iconContainer}>
-        <FontAwesome name="child" size={60} color="black" />
+        {prestation?.picture_url ? (
+          <Image
+            source={{ uri: prestation.picture_url }}
+            style={{ width: 60, height: 60, borderRadius: 30 }}
+            resizeMode="cover"
+          />
+        ) : (
+          <FontAwesome name="child" size={60} color="black" />
+        )}
       </View>
       <Text style={styles.title}>{prestation?.metier}</Text>
       <View style={styles.widthMax}>
@@ -549,6 +587,19 @@ const PrestationScreen = () => {
           ) : (
             <FontAwesome name="euro" size={30} color="black" />
           )}
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.tarifSection}>
+        <Text style={styles.tarifTitle}>Ajouter des prestations</Text>
+
+        <TouchableOpacity
+          style={prestation?.remuneration ? styles.tarifDisplay : styles.tarifButton}
+          onPress={goToMultiplePrestation}
+        >
+          
+            <Text style={styles.tarifText}>ajouter des prestations</Text>
+          
         </TouchableOpacity>
       </View>
 
@@ -639,15 +690,15 @@ const PrestationScreen = () => {
       {/* Section pour les horaires */}
       
       <View style={styles.availabilitySection}>
-  <Text style={styles.availabilityTitle}>Ajouter mes disponibilités</Text>
-  
-  <TouchableOpacity
-    style={styles.availabilityButton}
-    onPress={() => { /* Navigation vers un écran ou une fonction pour gérer les dispos */ }}
-  >
-    <FontAwesome name="calendar" size={30} color="black" />
-  </TouchableOpacity>
-</View>
+        <Text style={styles.availabilityTitle}>Ajouter mes disponibilités</Text>
+        
+        <TouchableOpacity
+          style={styles.availabilityButton}
+          onPress={goToAvailability}
+        >
+          <FontAwesome name="calendar" size={30} color="black" />
+        </TouchableOpacity>
+      </View>
 
 
       <View style={styles.buttonContainer}>
@@ -720,40 +771,77 @@ const PrestationScreen = () => {
           </View>
           ))}
 
-          <View style={styles.experienceForm}>
-            <TextInput
-              style={styles.input}
-              placeholder="Titre"
-              placeholderTextColor="#808080"
-              value={title}
-              onChangeText={setTitle} // Met à jour l'état 'title' à chaque changement
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Date"
-              placeholderTextColor="#808080"
-              value={date}
-              onChangeText={setDate} // Met à jour l'état 'date' à chaque changement
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Description"
-              placeholderTextColor="#808080"
-              multiline
-              value={experienceDescription}
-              onChangeText={setExperienceDescription} // Met à jour l'état 'description' à chaque changement
-            />
-            <View style={styles.photoGrid}>
-              <TouchableOpacity style={styles.addPhotoButton}>
-                <FontAwesome name="plus" size={40} color="gray" />
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity style={styles.submitButton} onPress={createExperience}>
-              <Text style={styles.submitButtonText}>Valider</Text>
-            </TouchableOpacity>
-          </View>
+{!showExperienceForm ? (
+  <TouchableOpacity
+    style={styles.addButton}
+    onPress={() => setShowExperienceForm(true)}
+  >
+    <Text style={styles.addButtonText}>Ajouter une expérience</Text>
+  </TouchableOpacity>
+) : (
+          // Le formulaire est juste en dessous
+        <View style={styles.certificationForm}>
+          <Text style={styles.inputLabel}>Titre</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Titre de l'expérience"
+            value={title}
+            onChangeText={setTitle}
+          />
+
+          <Text style={styles.inputLabel}>Date</Text>
+          <TouchableOpacity onPress={() => setShowExperienceCalendar(true)}>
+            <Text style={[styles.input, { color: experienceDate ? 'black' : '#999' }]}>
+              {experienceDate || 'Sélectionnez une date'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.inputLabel}>Description</Text>
+          <TextInput
+            style={[styles.input]}
+            placeholder="Description de l'expérience"
+            multiline
+            value={experienceDescription}
+            onChangeText={setExperienceDescription}
+          />
+
+          <TouchableOpacity style={styles.submitButton} onPress={createExperience}>
+            <Text style={styles.submitButtonText}>Valider</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => setShowExperienceForm(false)}
+          >
+            <Text style={styles.cancelButtonText}>Annuler</Text>
+          </TouchableOpacity>
+        </View>
+)}
+          
         </View>
       )}
+
+<Modal
+  animationType="slide"
+  transparent={true}
+  visible={showExperienceCalendar}
+  onRequestClose={() => setShowExperienceCalendar(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <TouchableOpacity onPress={() => setShowExperienceCalendar(false)} style={styles.closeIcon}>
+        <Icon name="close" size={24} color="#000" />
+      </TouchableOpacity>
+
+      <Text style={styles.modalTitle}>Choisissez une date</Text>
+      <Calendar
+        onDayPress={handleExperienceDateSelect}
+        markedDates={getExperienceMarkedDates()}
+        style={styles.calendar}
+      />
+    </View>
+  </View>
+</Modal>
 
       {/* Placeholder for the "Certifications" tab */}
       {selectedTab === 'certifications' && (
@@ -1404,7 +1492,7 @@ const styles = StyleSheet.create({
   },
   
   availabilitySection: {
-    marginVertical: 20,
+    marginVertical: 10,
     
   },
   
@@ -1423,7 +1511,7 @@ const styles = StyleSheet.create({
   },
   
   tarifSection: {
-    marginVertical: 20,
+    //marginVertical: 20,
     
   },
   
