@@ -63,6 +63,10 @@ const AccountScreen = () => {
     navigation.navigate('verificationCode' as never);
   };
 
+  const goToNote = async () => {
+    navigation.navigate('note' as never);
+  };
+
   const goToValidation = async () => {
     navigation.navigate('validation' as never);
   };
@@ -291,6 +295,13 @@ const AccountScreen = () => {
   <View style={styles.iconWithText}>
     <FontAwesome name="check-circle" size={20} color="#000" style={styles.menuIcon} />
     <Text style={styles.menuItemText}>Validation</Text>
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.menuItem} onPress={goToNote}>
+  <View style={styles.iconWithText}>
+    <FontAwesome name="check-circle" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>Note</Text>
   </View>
 </TouchableOpacity>
 

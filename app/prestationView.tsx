@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Modal, TextInput, Pressable, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Modal, TextInput, Pressable, Animated, FlatList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'avoir installé cette bibliothèque
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -10,6 +10,7 @@ import { useFonts } from 'expo-font';
 import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { Lexend_400Regular, Lexend_700Bold } from '@expo-google-fonts/lexend';
 import { JosefinSans_700Bold, JosefinSans_100Thin} from '@expo-google-fonts/josefin-sans';
+import * as Font from 'expo-font';
 
 
 const PrestationViewScreen = () => {
@@ -51,6 +52,8 @@ const PrestationViewScreen = () => {
   const [selectedMetier, setSelectedMetier] = useState(null);
   const scrollY = useRef(new Animated.Value(0)).current;
   const [modalType, setModalType] = useState<string | null>('date'); // 'date', 'arrival', 'departure'
+  const [unavailableDates, setUnavailableDates] = useState<string[]>([]);
+
   
     const profileImageSize = scrollY.interpolate({
       inputRange: [0, 70],
@@ -66,6 +69,24 @@ const PrestationViewScreen = () => {
       JosefinSans_100Thin,
     });
 
+    const reviews = [
+      {
+        id: '1',
+        name: 'Chloé.C',
+        text: "Cela fait maintenant 2 mois que Alicia garde mes enfants, et je suis entièrement satisfaite de son professionnalisme et de sa gentillesse. Merci ma chère Alicia ❤️",
+      },
+      {
+        id: '2',
+        name: 'Stéphane.C',
+        text: "Alicia garde mes animaux pour les vacances, vraiment top et fiable !",
+      },
+      {
+        id: '3',
+        name: 'Jérôme.B',
+        text: "Meilleure nounou ! Toujours à l'heure, joue beaucoup avec mes enfants, je recommande.",
+      },
+    ];
+
   const photos = [
     { uri: 'https://www.asiakingtravel.fr/cuploads/files/voyage-malaisie-itineraire-budget-circuit-7-jours-1.jpg' },
     { uri: 'https://images.partir.com/AkZB3l-cw9XLIP7t9SBGA20aW2Q=/750x/filters:sharpen(0.3,0.3,true)/lieux-interet/malaisie/malaisie-perhentian.jpg' },
@@ -79,9 +100,6 @@ const PrestationViewScreen = () => {
     { uri: 'https://abouttravel.ch/wp-content/uploads/2022/03/F22-110-06_Malaysia.jpg' },
     { uri: 'https://abouttravel.ch/wp-content/uploads/2022/03/F22-110-06_Malaysia.jpg' },
   ];
-
-  console.log("url")
-  console.log(profilePictureUrl)
 
   const handleHourChange = (text : any, setHour : any) => {
     const value = text.replace(/[^0-9]/g, ''); // Remove non-numeric characters
@@ -128,7 +146,7 @@ const PrestationViewScreen = () => {
   const toggleArrivalTimePicker = () => {
     //setCalendarVisible(false)
     //setArrivalTimePickerVisible(!isArrivalTimePickerVisible);
-    //console.log(isArrivalTimePickerVisible)
+    
     openModal('arrival'); // Ouvre le modal pour l'heure d'arrivée
   }
   const toggleDepartureTimePicker = () => {
@@ -153,25 +171,22 @@ const PrestationViewScreen = () => {
 
     if (!startDate) {
       setStartDate(selectedDate); // Si aucune date de début n'est définie, définissez-la
-      console.log("Date de début sélectionnée:", selectedDate);
+      //console.log("Date de début sélectionnée:", selectedDate);
     } else if (!endDate) {
       setEndDate(selectedDate); // Si aucune date de fin n'est définie, définissez-la
-      console.log("Date de fin sélectionnée:", selectedDate);
-      console.log("Plage de dates sélectionnée:", startDate, "à", selectedDate); // Affiche la plage de dates
+      //console.log("Date de fin sélectionnée:", selectedDate);
+      //console.log("Plage de dates sélectionnée:", startDate, "à", selectedDate); // Affiche la plage de dates
       
     } else {
       // Réinitialisez les dates si les deux ont déjà été sélectionnées
-      console.log("Réinitialisation des dates");
+      
       setStartDate(selectedDate); // Redémarrez avec la nouvelle date de début
       setEndDate(''); // Réinitialisez la date de fin
-      console.log("Nouvelle date de début sélectionnée:", selectedDate);
     }
   };
 
   const getPrestation = async () => {
     try {
-      console.log('debut prestation')
-      
       const response = await fetch(`${config.backendUrl}/api/mission/get-prestation`, {
         method: 'POST',
         headers: {
@@ -185,14 +200,9 @@ const PrestationViewScreen = () => {
       }
 
       const data = await response.json();
-      console.log('Prestation:', data.prestation[0]);
-      console.log('Prestation:', data.prestation);
-      console.log('ici :', data);
       // Stocker les prestations dans l'état
       setPrestation(data.prestation);
       setProfilePictureUrl(data.account.profile_picture_url)
-      console.log('ICI 123')
-      console.log(data.metiers)
       setMetiers(data.metiers)
       setAccount(data.account)
       setPrestationImages(data.images)
@@ -204,28 +214,21 @@ const PrestationViewScreen = () => {
   };
 
   const checkConversation = async () => {
-    console.log('debut de checkConversation')
+    
     try {
       const person1_id = await getAccountId();
       const person2_id = await prestation.worker_id;
-      console.log(prestation.worker_id)
       const person1_type = 'user';
       const person2_type = 'worker';
-      console.log('ici 2')
-      console.log(JSON.stringify({ person1_id, person2_id, person1_type, person2_type }))
       const response = await fetch(`${config.backendUrl}/api/conversation/check-conversation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ person1_id, person2_id, person1_type, person2_type }),
       });
-      console.log(response)
       const data = await response.json();
 
       if (data.exists) {
         // Si la conversation existe, on va directement au chat
-        console.log("135")
-        console.log(data)
-        console.log(data.conversation_id)
 
         goToChat(data.conversation_id);
       } else {
@@ -263,47 +266,11 @@ const PrestationViewScreen = () => {
     }
   };
 
-  const getConversation = async () => {
-    try {
-      const prestation2 :any = prestationRef.current
-      const person1_id =  await getAccountId();
-      console.log('ici ',prestation2);
-      const person2_id= prestation2.worker_id;
-      console.log(prestation2.worker_id)
-      const person1_type = 'user';
-      const person2_type = 'worker'
-      console.log('debut get conversation')
-      
-      const response = await fetch(`${config.backendUrl}/api/conversation/get-conversation`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ person1_id, person2_id, person1_type, person2_type}),
-      });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const data = await response.json();
-      const conversation_id = data.conversation_id
-      console.log('conversation_id:', data.conversation_id);
-      goToChat(conversation_id)
-      // Stocker les prestations dans l'état
-      
-      
-    } catch (error) {
-      console.error('Une erreur est survenue lors de la récupération des prestations:', error);
-    }
-  };
-
   const getAccountId = async () => {
     try {
       const accountId = await AsyncStorage.getItem('account_id');
       if (accountId !== null) {
-        console.log(1);
-        console.log(accountId);
+
         return accountId;
       }
     } catch (e) {
@@ -321,7 +288,6 @@ const PrestationViewScreen = () => {
   }
 
   const goToOtherPrestation = async (prestation_id : any, metier : any) => {
-    console.log("ca marche")
     setSelectedTag(metier)
     navigation.navigate({
       name: 'prestationView',
@@ -332,8 +298,6 @@ const PrestationViewScreen = () => {
 
   const getAllCertification = async () => {
     try {
-      console.log('debut get all certification')
-      
       const response = await fetch(`${config.backendUrl}/api/mission/get-all-certification`, {
         method: 'POST',
         headers: {
@@ -347,7 +311,6 @@ const PrestationViewScreen = () => {
       }
 
       const data = await response.json();
-      console.log('certifications :', data.certifications);
 
       // Stocker les prestations dans l'état
       setCertifications(data.certifications);
@@ -359,8 +322,6 @@ const PrestationViewScreen = () => {
 
   const getAllExperience = async () => {
     try {
-      console.log('debut get experiences')
-      
       const response = await fetch(`${config.backendUrl}/api/mission/get-all-experience`, {
         method: 'POST',
         headers: {
@@ -374,7 +335,6 @@ const PrestationViewScreen = () => {
       }
 
       const data = await response.json();
-      console.log('experiences :', data.experiences);
 
       // Stocker les prestations dans l'état
       setExperiences(data.experiences);
@@ -384,52 +344,88 @@ const PrestationViewScreen = () => {
     }
   };
 
+  const getUnavailableDates = async () => {
+    try {
+      const response = await fetch(`${config.backendUrl}/api/planned-prestation/get-worker-unavailable-dates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ worker_id: prestation.worker_id }),
+      });
+  
+      const data = await response.json();
+      console.log(data)
+      if (data.success) {
+        console.log('data.unavailableDates')
+        console.log(data.unavailableDates)
+        setUnavailableDates(data.unavailableDates);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des dates indisponibles:', error);
+    }
+  };
+
   const getMarkedDates = () => {
-    const markedDates : any = {};
+    const markedDates: any = {};
+  
     if (startDate) {
       markedDates[startDate] = { startingDay: true, color: 'green', textColor: 'white' };
     }
     if (endDate) {
       markedDates[endDate] = { endingDay: true, color: 'green', textColor: 'white' };
-
-      // Marquer toutes les dates entre startDate et endDate
       const start = new Date(startDate);
       const end = new Date(endDate);
       let currentDate = start;
-
+  
       while (currentDate <= end) {
         const dateString = currentDate.toISOString().split('T')[0];
         markedDates[dateString] = { color: 'lightgreen', textColor: 'white' };
         currentDate.setDate(currentDate.getDate() + 1);
       }
     }
+  
+    // Ajouter les dates indisponibles en rouge
+    unavailableDates.forEach(date => {
+      console.log(2)
+      markedDates[date] = {
+        disabled: true,
+        disableTouchEvent: true,
+        color: 'red',
+        textColor: 'white'
+      };
+    });
+    console.log(markedDates)
+  
     return markedDates;
   };
+  
 
   const openImageModal = (imageUri : any) => {
     setSelectedImage(imageUri);
     setImageModalVisible(true);
   };
 
-  const handlePressMail = useCallback(() => {
-    console.log("✅ checkConversation exécuté !");
-    checkConversation();
-  }, [checkConversation]); // Assurez-vous que la fonction ne change pas à chaque rendu
-  
   const closeImageModal = () => {
     setSelectedImage(null);
     setImageModalVisible(false);
   };
 
   useEffect(() => {
+    
     getPrestation();
     getAllExperience();
     getAllCertification()
+    getUnavailableDates()
+    async function loadFonts() {
+      await Font.loadAsync({
+        'Glacial-Regular': require('../assets/fonts/GlacialIndifference-Regular.otf'),
+        'Glacial-Bold': require('../assets/fonts/GlacialIndifference-Bold.otf'),
+      });
+    }
+    loadFonts();
     
   }, []);
 
   useEffect(() => {
-    console.log("Page rechargée avec un nouvel ID :", route.params.id);
     // Ajoutez ici la logique pour recharger les données avec l'ID
     getPrestation()
     getAllExperience()
@@ -438,23 +434,47 @@ const PrestationViewScreen = () => {
   }, [route.params.id]);
 
   useEffect(() => {
-    
-    console.log('Prestation mis à jour:', prestation);
-    console.log(prestation.worker_id)
     prestationRef.current = prestation;  // Met à jour la référence à chaque changement de prestation
   }, [prestation]);
+
+  useEffect(() => {
+    if (
+      modalType === 'arrival' &&
+      arrivalHour.length === 2 &&
+      arrivalMinute.length === 2
+    ) {
+      const hour = parseInt(arrivalHour, 10);
+      const minute = parseInt(arrivalMinute, 10);
+      if (!isNaN(hour) && !isNaN(minute) && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+        setTimeout(() => {
+          setModalType('departure');
+        }, 300); // Petite pause pour laisser le champ se remplir visuellement
+      }
+    }
+  }, [arrivalHour, arrivalMinute]);
 
   const goToSummary = () => {
     const arrivalTime = new Date();
     arrivalTime.setHours(parseInt(arrivalHour, 10), parseInt(arrivalMinute, 10),  0);
     const departureTime = new Date();
+
     departureTime.setHours(parseInt(departureHour, 10), parseInt(departureMinute, 10),  0);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const daysWorked = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1; // inclure le dernier jour
+
     toggleCalendar()
     toggleArrivalTimePicker()
     toggleDepartureTimePicker()
+
+    const hoursWorked = (departureTime.getTime() - arrivalTime.getTime()) / (1000 * 60 * 60); // conversion ms → heures
+
+    const totalRemuneration = prestation.remuneration * hoursWorked * daysWorked;
+    console.log('Total Rémunération:', totalRemuneration);
+
     navigation.navigate({
       name: 'summary',
-      params: {startDate : startDate, endDate: endDate, arrivalTime : arrivalTime, departureTime : departureTime, prestation : prestation, profilePictureUrl : profilePictureUrl},
+      params: {startDate : startDate, endDate: endDate, arrivalTime : arrivalTime, departureTime : departureTime, prestation : prestation, profilePictureUrl : profilePictureUrl, totalRemuneration: totalRemuneration, },
     } as never);
   }
 
@@ -478,9 +498,7 @@ const PrestationViewScreen = () => {
       <View style={styles.header}>
         
         <Text style={styles.profileName}>{account?.firstname}</Text>
-        <Text style={styles.profileDescription}>
-          {account?.description || "Aucune description disponible"}
-        </Text>
+        
       </View>
 
       <View style={styles.tagsContainer}>
@@ -509,12 +527,15 @@ const PrestationViewScreen = () => {
       </TouchableOpacity>
       ))}
     </ScrollView>
+    <Text style={styles.profileDescription}>
+      {account?.description || "Aucune description disponible"}
+    </Text>
     
       </View>
 
       {/* Section des statistiques */}
       <View style={styles.descriptionContainer}>
-        <Text style={styles.profileName}>{prestation.metier}</Text>
+        <Text style={styles.metierName}>{prestation.metier}</Text>
         <Text style={styles.descriptionContainerText}>
         {prestation.description || "Aucune description disponible"}
         </Text>
@@ -606,11 +627,21 @@ const PrestationViewScreen = () => {
 
       {/* Avis */}
       <View style={styles.reviewsContainer}>
-        <Text style={styles.sectionHeader}>Avis (12)</Text>
-        <View style={styles.review}>
-          <Text style={styles.reviewText}>Alicia est la meilleure babysitter que j'ai eu pour mes enfants !</Text>
-          <Text style={styles.reviewAuthor}>- Jérôme.B</Text>
-        </View>
+        <Text style={styles.avisHeader}>Avis ({reviews.length})</Text>
+
+        <FlatList
+          data={reviews}
+          keyExtractor={(item : any) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.reviewsList}
+          renderItem={({ item } : any) => (
+            <View style={styles.reviewCard}>
+              <Text style={styles.reviewName}>{item.name}</Text>
+              <Text style={styles.reviewText}>{item.text}</Text>
+            </View>
+          )}
+        />
       </View>
 
       {/* Tarification */}
@@ -807,8 +838,12 @@ const PrestationViewScreen = () => {
     {/* Ajouter au panier */}
     
     <View style={styles.addButtonFixedContainer}>
+        
         <TouchableOpacity style={styles.addButton} onPress={toggleCalendar}>
-          <Text style={styles.addButtonText}>Ajouter au panier</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.addButtonText}>Ajouter</Text>
+            <Icon name="shopping-cart" size={24} color="white" style={{ marginLeft: 8 }} />
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -837,11 +872,21 @@ const styles = StyleSheet.create({
     textAlign : 'center',
     fontFamily : 'JosefinSans_700Bold'
   },
+
+  metierName: {
+    fontSize: 24,
+    color: '#000',
+    marginTop: 10,
+    textAlign : 'center',
+    fontFamily : 'JosefinSans_700Bold'
+  },
+
   profileDescription: {
     fontSize: 16,
     color: '#000',
     textAlign: 'center',
     marginVertical: 10,
+    fontFamily: 'Glacial-Regular',
   },
   tagsContainer: {
     marginTop: 10,
@@ -857,18 +902,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     //backgroundColor: '#f0f0f0', // Couleur par défaut pour les badges
   },
+
   selectedTag: {
     backgroundColor: 'gold', // Fond grisé
     borderColor: '#999', // Bordure visible
   },
+
   tagText: {
     fontSize: 14,
     color: '#555',
-    fontWeight: 'bold',
+    fontFamily: 'JosefinSans_700Bold',
   },
+
   selectedTagText: {
     color: '#fff', // Texte plus foncé pour le badge sélectionné
-    fontWeight: 'bold',
+    fontFamily: 'JosefinSans_700Bold',
   },
 
   statsContainer: {
@@ -876,20 +924,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginVertical: 20,
   },
+
   stat: {
     alignItems: 'center',
   },
+
   statNumber: {
     fontSize: 15,
-    fontWeight: 'bold',
     color: '#000',
+    fontFamily : 'Glacial-Regular'
   },
   statLabel: {
     fontSize: 11,
     width : '80%',
     color: '#000',
-    textAlign : 'center'
+    textAlign : 'center',
+    fontFamily : 'Glacial-Bold',
   },
+
   descriptionContainer: {
     //backgroundColor: '#f4f4f4',
     //margin : 20,
@@ -901,10 +953,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e0e0e0', // Couleur claire pour la bordure
   },
+
   descriptionContainerText: {
     fontSize: 12,
-    textAlign : 'center'
+    textAlign : 'center',
+    fontFamily : 'Glacial-Regular'
   },
+
   tabContainer: {
     flexDirection: 'row',
     //justifyContent: 'space-around',
@@ -923,8 +978,9 @@ const styles = StyleSheet.create({
   tabButtonText: {
     color: '#FFF',
     fontSize: 14,
-    fontWeight : 'bold'
+    fontFamily : 'JosefinSans_700Bold',
   },
+
   photosContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -937,10 +993,10 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     alignSelf : 'center'
   },
+
   photoButton: {
     width: '33.33%',
     aspectRatio: 1,
-    
   },
 
   experienceContainer: {
@@ -987,10 +1043,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginHorizontal: 10,
   },
-  reviewText: {
-    fontSize: 16,
-    color: '#000',
-  },
+  
   reviewAuthor: {
     fontSize: 14,
     color: '#666',
@@ -1001,7 +1054,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     //marginBottom: 120,
-    backgroundColor: 'green',
+    backgroundColor: '#00743C',
     height: 100,
     marginHorizontal: 10,
     paddingHorizontal: 30,
@@ -1053,20 +1106,22 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center', // Centré horizontalement
-    
     paddingVertical: 10, // Espacement autour du bouton
     zIndex: 1000, // Toujours au-dessus du contenu
   },
+
   addButton: {
-    backgroundColor: 'green',
+    backgroundColor: '#00BF63',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: 'center',
-    width: 300,
+    width: '90%',
   },
+
   addButtonText: {
     fontSize: 16,
     color: '#FFF',
+    fontFamily : 'Glacial-Bold'
   },
 
   sectionHeader: {
@@ -1081,12 +1136,26 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start'
   },
 
+  avisHeader: {
+    fontSize : 15,
+    
+    color: '#000',
+    marginVertical : 10,
+    marginLeft : 5,
+    padding : 8,
+    backgroundColor : '#d9d9d9',
+    borderRadius : 20,
+    alignSelf: 'flex-start',
+    fontFamily : 'JosefinSans_100Thin'
+  },
+
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
   },
+  
   modalContent: {
     width: '80%',
     backgroundColor: 'white',
@@ -1094,21 +1163,25 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
+  
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  
   dateButton: {
     padding: 10,
     marginVertical: 5,
     borderRadius: 5,
     backgroundColor: '#00cc66', // Button color
   },
+  
   dateButtonText: {
     color: '#fff',
     fontSize: 16,
   },
+
   closeButton: {
     marginTop: 20,
     padding: 10,
@@ -1346,9 +1419,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    backgroundColor: '#fff',
   },
   
   backButton: {
@@ -1423,6 +1493,35 @@ const styles = StyleSheet.create({
     height: 70,
     backgroundColor: '#FFFFFF',
     transform: [{ rotate: '45deg' }],
+  },
+
+  reviewsList: {
+    paddingHorizontal: 10,
+  },
+  
+  reviewCard: {
+    backgroundColor: '#EEEEEE',
+    borderRadius: 15,
+    padding: 15,
+    marginRight: 10,
+    width: 250,
+    
+    
+    
+    
+  },
+  
+  reviewName: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 8,
+    fontFamily: 'Glacial-Bold', 
+  },
+  
+  reviewText: {
+    fontSize: 14,
+    color: '#555',
+    fontFamily: 'Glacial-Regular',
   },
   
 });

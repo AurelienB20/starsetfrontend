@@ -11,12 +11,15 @@ import {
 } from 'react-native';
 import config from '../config.json';
 import { useAllWorkerPrestation, useCurrentWorkerPrestation }  from '@/context/userContext';
+import { Ionicons } from '@expo/vector-icons';
 
 const PrestationsScreen = ({ route }: any) => {
   
 
   const [customPrestations, setCustomPrestations] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  
+  const [editingPrestation, setEditingPrestation] = useState<any>(null);
   const [newPrestation, setNewPrestation] = useState({ title: '', price: '', description: '' });
   const { currentWorkerPrestation: prestation, setCurrentWorkerPrestation } = useCurrentWorkerPrestation();
 
@@ -63,18 +66,57 @@ const PrestationsScreen = ({ route }: any) => {
     }
   };
 
+  const updateCustomPrestation = async () => {
+    try {
+      const response = await fetch(`${config.backendUrl}/api/prestation/modify-prestation-custom`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_prestation: { ...newPrestation, id: editingPrestation?.id } }),
+      });
+
+      if (!response.ok) throw new Error('Erreur réseau');
+
+      const data = await response.json();
+      setCustomPrestations((prev: any) => prev.map((item: any) => item.id === data.custom_prestation.id ? data.custom_prestation : item));
+      setNewPrestation({ title: '', price: '', description: '' });
+      setEditingPrestation(null);
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Erreur modification prestation custom:', error);
+      Alert.alert('Erreur', 'Impossible de modifier la prestation personnalisée.');
+    }
+  };
+
   useEffect(() => {
     if (prestation?.id) getCustomPrestations();
   }, [prestation?.id]);
 
   const renderPrestation = ({ item }: any) => (
     <View style={styles.prestationCard}>
+      <TouchableOpacity style={styles.optionsIcon} onPress={() => askEditPrestation(item)}>
+        <Ionicons name="ellipsis-vertical" size={20} color="#000" />
+      </TouchableOpacity>
       <Text style={styles.prestationTitle}>{item.title}</Text>
       <View style={styles.prestationPriceContainer}>
         <Text style={styles.prestationPrice}>{item.price}€</Text>
       </View>
     </View>
   );
+
+  const askEditPrestation = (item: any) => {
+    Alert.alert(
+      'Modifier la prestation',
+      'Voulez-vous modifier cette prestation ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Modifier', onPress: () => {
+          setEditingPrestation(item);
+          setNewPrestation({ title: item.title, price: String(item.price), description: item.description });
+          setModalVisible(true);
+        }}
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -231,6 +273,12 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#FFF',
     textAlign: 'center',
+  },
+
+  optionsIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
 });
 

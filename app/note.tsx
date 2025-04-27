@@ -18,7 +18,7 @@ const NoteScreen = () => {
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
+        source={{ uri: 'https://randomuser.me/api/portraits/women/43.jpg' }}
         style={styles.avatar}
       />
       <Text style={styles.title}>BABYSITTING</Text>

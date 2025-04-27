@@ -9,10 +9,12 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import config from '../../config.json';
+import { useUser } from '@/context/userContext';
 
 const CroissanceScreen = () => {
   const [jobsOfTheDay, setJobsOfTheDay] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useUser(); // Utilisation du contexte pour récupérer les infos utilisateur
 
   const news = {
     title: 'Big Announcement',
@@ -70,7 +72,7 @@ const CroissanceScreen = () => {
           <Text style={styles.statText}>TOP JOB</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>18</Text>
+          <Text style={styles.statNumber}>{user?.completed_prestation}</Text>
           <Text style={styles.statText}>Missions accomplies</Text>
         </View>
         <View style={styles.statItem}>

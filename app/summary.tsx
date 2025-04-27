@@ -21,7 +21,7 @@ const SummaryScreen = () => {
 
   const navigation = useNavigation();
   
-  const { startDate, endDate, arrivalTime, departureTime, prestation, profilePictureUrl } = route.params;
+  const { startDate, endDate, arrivalTime, departureTime, prestation, profilePictureUrl,totalRemuneration } = route.params;
   console.log("route.params")
   console.log(route.params)
   console.log(arrivalTime)
@@ -74,7 +74,7 @@ const extractAddressParts = (address : any) => {
     
     navigation.navigate({
       name: 'payment',
-      params: { startDate :startDate,endDate : endDate,  arrivalTime : arrivalTime, departureTime : departureTime, prestation :prestation, profilePictureUrl : profilePictureUrl },
+      params: { startDate :startDate,endDate : endDate,  arrivalTime : arrivalTime, departureTime : departureTime, prestation :prestation, profilePictureUrl : profilePictureUrl,totalRemuneration : totalRemuneration },
     } as never);
   };
 
@@ -140,7 +140,7 @@ const extractAddressParts = (address : any) => {
 
       <View style={styles.totalpurchase}>
         <Text style={styles.totalText}>Total achat:</Text>
-        <Text style={styles.totalText}>30,00€</Text>
+        <Text style={styles.totalText}>{totalRemuneration}</Text>
       </View>
       
 

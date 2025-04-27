@@ -54,7 +54,7 @@ const ValidationScreen = () => {
       <View style={styles.iconContainer}>
         {!validated && (
           <Animated.View style={[styles.arcContainer, { transform: [{ rotate: spin }] }]}>
-            <Svg width="130" height="130" viewBox="0 0 130 130">
+            <Svg width="200" height="200" viewBox="0 0 130 130">
               <Path
                 d="M 60 10
                    A 54 54 0 0 1 120 60"
@@ -70,7 +70,7 @@ const ValidationScreen = () => {
         <View style={styles.innerCircle}>
           <MaterialIcons
             name={validated ? 'check' : 'shopping-cart'}
-            size={50}
+            size={80}
             color="white"
           />
         </View>
@@ -117,8 +117,8 @@ const styles = StyleSheet.create({
   innerCircle: {
     backgroundColor: '#00723F',
     borderRadius: 95,
-    height: 95,
-    width: 95,
+    height: 150,
+    width: 150,
     justifyContent: 'center',
     alignItems: 'center',
   },

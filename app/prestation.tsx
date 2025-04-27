@@ -11,7 +11,6 @@ import { useAllWorkerPrestation, useCurrentWorkerPrestation }  from '@/context/u
 import { Calendar } from 'react-native-calendars';
 import moment from 'moment'; // Si tu veux formater joliment
 
-
 import {
   getPrestation,
   getAllExperience,
@@ -275,6 +274,18 @@ const PrestationScreen = () => {
     const data = await response.json();
     //console.log(data);
 
+  };
+
+  const handleFormattedRemuneration = (text: string) => {
+    // Enlève tout sauf les chiffres
+    const cleaned = text.replace(/[^0-9]/g, '');
+  
+    let number = parseInt(cleaned || '0', 10);
+  
+    // Divise par 100 pour avoir deux décimales
+    const formatted = (number / 100).toFixed(2);
+  
+    setRemuneration(formatted);
   };
 
   
@@ -612,21 +623,32 @@ const PrestationScreen = () => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
+            
+            {/* CROIX pour fermer */}
+            <TouchableOpacity style={styles.closeIcon} onPress={() => setModalVisible(false)}>
+              <MaterialIcons name="close" size={24} color="black" />
+            </TouchableOpacity>
+
             <Text style={styles.modalTitle}>TARIF PAR HEURE</Text>
+            
             <TextInput
               style={styles.inputModal}
               placeholder="0,00"
               keyboardType="numeric"
               value={remuneration}
-              onChangeText={setRemuneration}
+              onChangeText={handleFormattedRemuneration}
             />
+            
             <Text style={styles.currency}>€</Text>
+
             <TouchableOpacity style={styles.saveButton} onPress={handleSaveRemuneration}>
               <Text style={styles.saveButtonText}>ENREGISTRER</Text>
             </TouchableOpacity>
+
           </View>
         </View>
       </Modal>
+
       {/* Popup Modal */}
       <Modal visible={isPopupVisible} animationType="slide" transparent={true}>
       <View style={styles.tarifPopupOverlay}>
@@ -1572,6 +1594,7 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 10,
   },
+
 });
 
 export default PrestationScreen;

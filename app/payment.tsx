@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { StyleSheet } from 'react-native';
 import config from '../config.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const PaymentScreen = () => {
   const route = useRoute() as any;
   const navigation = useNavigation();
   
-  // Récupération des paramètres passés
   const { 
     startDate, 
     endDate, 
@@ -18,96 +15,81 @@ const PaymentScreen = () => {
     departureTime, 
     prestation, 
     profilePictureUrl,
+    totalRemuneration
   } = route.params;
 
   const getAccountId = async () => {
-    console.log(" debut accoount id")
     try {
       const account_id = await AsyncStorage.getItem('account_id');
-      console.log("account_id 12")
-      console.log(account_id)
-      if (account_id !== null) {
-        return account_id;
-      }
+      return account_id;
     } catch (e) {
-      console.error('Erreur lors de la récupération du type de compte', e);
+      console.error('Erreur lors de la récupération du compte', e);
     }
   };
 
-  // Fonction pour gérer le paiement
   const handlePayment = async () => {
-    
-    let user_id =  await getAccountId()
-    console.log("user_id")
-    console.log(user_id)
+    const user_id = await getAccountId();
     try {
       const response = await fetch(`${config.backendUrl}/api/planned-prestation/create-planned-prestation`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          worker_id : prestation.worker_id,
-          user_id : user_id,
-          prestation_id : prestation.id,
+          worker_id: prestation.worker_id,
+          user_id: user_id,
+          prestation_id: prestation.id,
           start_date: startDate,
           end_date: endDate,
-          type_of_remuneration : 'hours',
-          remuneration : prestation.remuneration,
-          start_time : arrivalTime,
-          end_time : departureTime,
+          type_of_remuneration: 'hours',
+          remuneration: totalRemuneration,
+          start_time: arrivalTime,
+          end_time: departureTime,
         }),
       });
 
       const data = await response.json();
-      console.log(data);
-
       if (data.success) {
-        
         navigation.navigate('validation' as never);
       } else {
         Alert.alert("Erreur", "Une erreur est survenue lors du paiement.");
       }
     } catch (error) {
-      console.error('Erreur lors de la requête:', error);
+      console.error('Erreur paiement :', error);
       Alert.alert("Erreur", "Impossible de valider le paiement. Vérifiez votre connexion.");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>PAIEMENT</Text>
+      <Text style={styles.headerText}>Paiement</Text>
+
       <View style={styles.profileContainer}>
         <Image
-          source={{ uri: profilePictureUrl || 'https://example.com/profile-picture.jpg' }} 
+          source={{ uri: profilePictureUrl || prestation.picture_url }}
           style={styles.profilePicture}
         />
       </View>
 
-      <Text style={styles.sectionHeader}>Informations générales</Text>
+      <Text style={styles.sectionHeader}>Détails de la prestation</Text>
       <View style={styles.infoContainer}>
         <View style={styles.tag}>
-          <Text style={styles.tagText}>👶 Babysitting</Text>
+          <Text style={styles.tagText}>{prestation.metier}</Text>
         </View>
-        <View style={styles.tag}>
-          <Text style={styles.tagText}>🐶 Petsitting</Text>
-        </View>
-        <Text style={styles.addressText}>📍 19 avenue Charles de Gaulle, 77400</Text>
-        <Text style={styles.noteText}>✏️ “Pouvez-vous préparer son dîner aux alentours de 19h30 svp. Merci 😊”</Text>
+        <Text style={styles.descriptionText}>{prestation.description}</Text>
       </View>
 
-      <Text style={styles.sectionHeader}>Mode de paiement</Text>
+      <Text style={styles.sectionHeader}>Résumé du paiement</Text>
       <View style={styles.paymentContainer}>
-        <Text style={styles.paymentText}>Total achat</Text>
-        <Text style={styles.paymentAmount}>30,00€</Text>
+        <Text style={styles.paymentText}>Total heures</Text>
+        <Text style={styles.paymentAmount}>{parseFloat(totalRemuneration).toFixed(2)}€</Text>
       </View>
+
+      <View style={styles.separator} />
+
       <View style={styles.paymentContainer}>
-        <Text style={styles.paymentText}>Frais de services</Text>
-        <Text style={styles.paymentAmount}>3,00€</Text>
-      </View>
-      <View style={styles.paymentContainer}>
-        <Text style={styles.paymentText}>Frais de déplacement</Text>
-        <Text style={styles.paymentAmount}>1,30€</Text>
+        <Text style={[styles.paymentText, { fontWeight: 'bold' }]}>Total final</Text>
+        <Text style={[styles.paymentAmount, { fontWeight: 'bold' }]}>
+          {(parseFloat(totalRemuneration) + 3 + 1.30).toFixed(2)}€
+        </Text>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handlePayment}>
@@ -135,13 +117,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
   },
-
   profilePicture: {
     width: 100,
     height: 100,
     borderRadius: 50,
   },
-  
   sectionHeader: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -154,61 +134,52 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   tag: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#d9f9d9',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 8,
     marginBottom: 10,
   },
-
   tagText: {
     fontSize: 16,
     color: '#000',
   },
-
-  addressText: {
-    fontSize: 16,
-    color: '#000',
-    marginBottom: 10,
+  descriptionText: {
+    fontSize: 14,
+    color: '#555',
   },
-
-  noteText: {
-    fontSize: 16,
-    color: '#000',
-    fontStyle: 'italic',
-  },
-
   paymentContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
     marginBottom: 10,
   },
-
   paymentText: {
     fontSize: 16,
     color: '#000',
   },
-
   paymentAmount: {
     fontSize: 16,
     color: '#000',
   },
-
+  separator: {
+    height: 1,
+    width: '100%',
+    backgroundColor: '#ccc',
+    marginVertical: 10,
+  },
   button: {
     backgroundColor: 'green',
     padding: 15,
-    borderRadius: 5,
-    marginTop: 20,
+    borderRadius: 8,
+    marginTop: 30,
     width: '100%',
     alignItems: 'center',
   },
-
   buttonText: {
     fontSize: 16,
-    color: '#000',
+    color: '#FFF',
+    fontWeight: 'bold',
   },
 });
 
 export default PaymentScreen;
-
-

@@ -8,9 +8,12 @@ import config from '../../config.json';
 
 import { useFonts } from 'expo-font';
 import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
+import { LexendDeca_400Regular } from '@expo-google-fonts/lexend-deca';
 import { Lexend_400Regular, Lexend_700Bold } from '@expo-google-fonts/lexend';
+import { JosefinSans_700Bold, JosefinSans_100Thin} from '@expo-google-fonts/josefin-sans';
 import AppLoading from 'expo-app-loading';
 //import axios from '../api/axios';
+import * as Font from 'expo-font';
 
 const profilePictures = [
   "https://www.utopix.com/fr/blog/wp-content/uploads/2024/04/Mzk0NGJkOWEtY2ZlYS00MjVjLTkwNTAtOGY5OWQzN2IzNGVi_762cec57-2eaf-4eaf-9a0d-2e7860147e48_profilhomme7-scaled.jpg",
@@ -48,6 +51,9 @@ const SearchScreen = () => {
   const [workers, setWorkers] = useState([]);
   let [fontsLoaded] = useFonts({
     BebasNeue: BebasNeue_400Regular,
+    LexendDeca : LexendDeca_400Regular,
+    JosefinRegular : JosefinSans_700Bold,
+    JosefinBold : JosefinSans_100Thin,
   });
 
   const handleEndReached = () => {
@@ -181,6 +187,14 @@ const SearchScreen = () => {
   useEffect(() => {
     fetchPrestations();
     getWorkers();
+    async function loadFonts() {
+      await Font.loadAsync({
+        'Glacial-Regular': require('../../assets/fonts/GlacialIndifference-Regular.otf'),
+        'Glacial-Bold': require('../../assets/fonts/GlacialIndifference-Bold.otf'),
+      });
+     
+    }
+    loadFonts();
   }, []);
 
   /*if (!fontsLoaded) {
@@ -199,6 +213,7 @@ const SearchScreen = () => {
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 60 }} // <-- AJOUTE CECI
       ListHeaderComponent={
         <View style={styles.container}>
           <Text style={styles.headerText}>Star Set</Text>
@@ -376,12 +391,14 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     //backgroundColor : 'red',
-    flex : 1
+    flexDirection : 'column',
+    flex : 1,
+    justifyContent : 'space-between'
   },
   profileName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'BebasNeue', // Utilisation du nom défini dans useFonts
+    fontSize: 19,
+    
+    fontFamily: 'Glacial-Bold', // Utilisation du nom défini dans useFonts
   },
 
   profileUsername: {
@@ -391,7 +408,7 @@ const styles = StyleSheet.create({
   },
 
   profileDescription: {
-    fontSize: 12,
+    fontSize: 14,
     marginVertical: 5,
     textAlign : 'center',
     fontFamily: 'BebasNeue',
@@ -418,8 +435,9 @@ const styles = StyleSheet.create({
   },
 
   categoryText2: {
-    fontSize: 7,
+    fontSize: 8,
     color: '#333',
+    fontFamily : 'JosefinRegular',
   },
 
   ratingContainer: {
@@ -454,7 +472,8 @@ const styles = StyleSheet.create({
 
   pseudo: {
     color: '#888',
-    fontSize: 14,
+    fontSize: 12,
+    fontFamily : 'LexendDeca'
   },
 
   loader: {
@@ -487,13 +506,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
-    marginRight : 10
+    marginRight : 10,
+    fontFamily : 'BebasNeue'
   },
 
   userList: {
     flexDirection: 'row',
     paddingHorizontal: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#d3d3d3', // Gris clair
+    marginHorizontal: 20, // <-- C'est ça qui fait que la ligne ne va pas jusqu'au bout
+    borderRadius: 10, // (optionnel) rend les coins légèrement arrondis
+    backgroundColor: '#fff', // (optionnel) si tu veux garder un fond blanc
   },
+
   userContainer: {
     position: 'relative',
     marginRight: 15,
