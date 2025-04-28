@@ -82,6 +82,32 @@ const ConversationScreen = () => {
       : messageTime.format('DD/MM/YYYY');
   };
 
+  // === Ajoute cette fonction pour accepter une conversation ===
+const acceptConversation = async (conversation_id: string) => {
+  try {
+    const response = await fetch(`${config.backendUrl}/api/conversation/accept-conversation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ conversation_id }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de l’acceptation de la conversation');
+    }
+
+    const data = await response.json();
+    console.log('Conversation acceptée:', data);
+
+    // Après acceptation, recharge les conversations
+    await getAllConversation();
+  } catch (error) {
+    console.error('Erreur lors de l’acceptation:', error);
+  }
+};
+
+
   const gotoChat = async (conversationId: string, contactProfilePictureUrl: string, contactFirstname: string) => {
     const worker_id = await getWorkerId();
     navigation.navigate({
@@ -187,8 +213,10 @@ const ConversationScreen = () => {
   <View style={styles.modalBackground}>
     <View style={styles.modalContainer}>
       <Text style={styles.modalTitle}>Demandes de conversation</Text>
+
+      {/* Afficher seulement les conversations non acceptées */}
       <FlatList
-        data={conversations}
+        data={conversations.filter((conv : any) => conv.accepted === false)}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.modalMessageItem}>
@@ -202,23 +230,32 @@ const ConversationScreen = () => {
                 <Text style={styles.message}>{item.message_text}</Text>
               </View>
             </View>
+
             <View style={styles.modalButtonsRow}>
-              <TouchableOpacity style={styles.acceptButton}>
+              <TouchableOpacity
+                style={styles.acceptButton}
+                onPress={() => acceptConversation(item.id)}
+              >
                 <Text style={styles.buttonText}>Accepter</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.rejectButton}>
+              <TouchableOpacity
+                style={styles.rejectButton}
+                onPress={() => console.log('Refuser non implémenté')}
+              >
                 <Text style={styles.buttonText}>Refuser</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
       />
+
       <TouchableOpacity style={styles.modalClose} onPress={() => setModalVisible(false)}>
         <Text style={styles.modalCloseText}>Fermer</Text>
       </TouchableOpacity>
     </View>
   </View>
 </Modal>
+
 
     </View>
   );
