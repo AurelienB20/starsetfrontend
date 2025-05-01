@@ -29,7 +29,7 @@ const PrestationScreen = () => {
   //const [prestation, setPrestation] = useState<any>({});
   const { currentWorkerPrestation: prestation, setCurrentWorkerPrestation } = useCurrentWorkerPrestation();
 
-  const [experiences, setExperiences] = useState([])
+  const [experiences, setExperiences] = useState<any[]>([]);
   const [isPopupVisible, setIsPopupVisible] = useState(false); // État pour gérer la visibilité du popup
 
   const [title, setTitle] = useState('');
@@ -383,30 +383,34 @@ const PrestationScreen = () => {
   };
 
   const createExperience = async () => {
-    setIsEditing(false);
-    // Vous pouvez ajouter ici le code pour sauvegarder la nouvelle description, si nécessaire
     try {
-      console.log('debut create experience')
-      
       const response = await fetch(`${config.backendUrl}/api/mission/create-experience`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, date, experienceDescription, prestation_id }),
+        body: JSON.stringify({ title, date: experienceDate, experienceDescription, prestation_id }),
       });
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
+  
+      if (!response.ok) throw new Error('Network response was not ok');
+  
       const data = await response.json();
-      console.log('experience:', data.experience[0]);
-
-      // Stocker les prestations dans l'état
-      
+  
+      // 🟢 Ajoute l'expérience directement à la liste
+      setExperiences(prev => [...prev, data.experience[0]]);
+  
+      // 🟢 Ferme le formulaire
+      setShowExperienceForm(false);
+  
+      // 🟢 Réinitialise les champs du formulaire
+      setTitle('');
+      setExperienceDate('');
+      setExperienceDescription('');
+  
+      Alert.alert('Succès', 'Expérience ajoutée avec succès');
     } catch (error) {
-      console.error('Une erreur est survenue lors de la récupération des prestations:', error);
+      console.error('Erreur lors de l\'ajout de l\'expérience:', error);
+      Alert.alert('Erreur', 'Impossible d\'ajouter l\'expérience');
     }
   };
 
@@ -766,18 +770,7 @@ const PrestationScreen = () => {
 
       {selectedTab === 'experiences' && (
         <View>
-          <View style={styles.experienceCard}>
-            <View style={styles.experienceHeader}>
-              <Text style={styles.experienceTitle}>{experienceData.title} <FontAwesome name="smile-o" size={20} /></Text>
-              <Text style={styles.experienceDate}>{experienceData.date}</Text>
-            </View>
-            <Text style={styles.experienceDescription}>{experienceData.description}</Text>
-            <View style={styles.experienceImages}>
-              {experienceData.images.map((image, index) => (
-                <Image key={index} source={{ uri: image.uri }} style={styles.experienceImage} />
-              ))}
-            </View>
-          </View>
+          
           {experiences.map((experience : any) => (
             <View style={styles.experienceCard}>
             <View style={styles.experienceHeader}>
@@ -793,14 +786,14 @@ const PrestationScreen = () => {
           </View>
           ))}
 
-{!showExperienceForm ? (
-  <TouchableOpacity
-    style={styles.addButton}
-    onPress={() => setShowExperienceForm(true)}
-  >
-    <Text style={styles.addButtonText}>Ajouter une expérience</Text>
-  </TouchableOpacity>
-) : (
+          {!showExperienceForm ? (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => setShowExperienceForm(true)}
+            >
+              <Text style={styles.addButtonText}>Ajouter une expérience</Text>
+            </TouchableOpacity>
+          ) : (
           // Le formulaire est juste en dessous
         <View style={styles.certificationForm}>
           <Text style={styles.inputLabel}>Titre</Text>

@@ -349,11 +349,13 @@ const HomeScreen = () => {
       ): loading ? (
         <>
           <Text style={styles.sectionTitle}>En ce moment</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <CategorySkeleton key={index} />
-            ))}
-          </View>
+          <FlatList
+            data={Array.from({ length: 8 })}
+            renderItem={({ index }) => <CategorySkeleton key={index} />}
+            keyExtractor={(_, index) => index.toString()}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+          />
         </>
       ) : (
         <>
@@ -604,6 +606,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     opacity: 0.3,
   },
+
+  
   
 
 });

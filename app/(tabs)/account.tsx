@@ -75,6 +75,14 @@ const AccountScreen = () => {
     navigation.navigate('availability' as never);
   };
 
+  const goToLanguage = async () => {
+    navigation.navigate('language' as never);
+  };
+
+  const goToAbout = async () => {
+    navigation.navigate('about' as never);
+  };
+
   const getAccountId = async () => {
     try {
       const account_id = await AsyncStorage.getItem('account_id');
@@ -263,7 +271,7 @@ const AccountScreen = () => {
   </View>
 </TouchableOpacity>
 
-<TouchableOpacity style={styles.menuItem}>
+<TouchableOpacity style={styles.menuItem} onPress={goToLanguage}>
   <View style={styles.iconWithText}>
     <FontAwesome name="language" size={20} color="#000" style={styles.menuIcon} />
     <Text style={styles.menuItemText}>Langues</Text>
@@ -291,17 +299,10 @@ const AccountScreen = () => {
   </View>
 </TouchableOpacity>
 
-<TouchableOpacity style={styles.menuItem} onPress={goToValidation}>
+<TouchableOpacity style={styles.menuItem} onPress={goToAbout}>
   <View style={styles.iconWithText}>
-    <FontAwesome name="check-circle" size={20} color="#000" style={styles.menuIcon} />
-    <Text style={styles.menuItemText}>Validation</Text>
-  </View>
-</TouchableOpacity>
-
-<TouchableOpacity style={styles.menuItem} onPress={goToNote}>
-  <View style={styles.iconWithText}>
-    <FontAwesome name="check-circle" size={20} color="#000" style={styles.menuIcon} />
-    <Text style={styles.menuItemText}>Note</Text>
+    <FontAwesome name="user" size={20} color="#000" style={styles.menuIcon} />
+    <Text style={styles.menuItemText}>A Propos</Text>
   </View>
 </TouchableOpacity>
 

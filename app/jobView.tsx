@@ -3,6 +3,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import config from '../config.json';
+import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
+import { useFonts } from 'expo-font';
 
 const JobViewScreen = () => {
   const [metier, setMetier] = useState<any>(null);
@@ -31,6 +33,10 @@ const JobViewScreen = () => {
       console.error('Une erreur est survenue. Veuillez réessayer.');
     }
   };
+
+  let [fontsLoaded] = useFonts({
+    BebasNeue: BebasNeue_400Regular,    
+  });
 
   const getAccountId = async () => {
     try {
@@ -142,7 +148,7 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily : 'BebasNeue',
     textAlign: 'center',
     marginBottom: 10,
   },
@@ -154,14 +160,16 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily : 'BebasNeue',
     marginBottom: 10,
   },
+
   missionItem: {
     fontSize: 16,
     color: '#555',
     marginBottom: 5,
   },
+  
   documentText: {
     fontSize: 16,
     color: '#333',

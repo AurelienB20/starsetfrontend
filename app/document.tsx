@@ -34,12 +34,7 @@ const DocumentsScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Mes documents</Text>
-      </View>
+      
 
       <Text style={styles.sectionTitle}>DOCUMENTS OBLIGATOIRES</Text>
       {requiredDocuments.map(renderDocument)}

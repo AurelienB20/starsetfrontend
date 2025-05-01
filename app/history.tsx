@@ -1,175 +1,142 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 
-const prestationData = [
-    {
-      title: 'Babysitting',
-      name: 'Patrick.C',
-      price: '120,00 €',
-      showPopup: true
-    },
-    {
-      title: 'Animation',
-      name: 'Céline.B',
-      price: '2 500,00€',
-      badge: 'Prestation 1'
-    },
-    {
-      title: 'Petsitter',
-      name: 'Laurence.V',
-      price: '2 500,00€',
-      badge: 'Prestation 1'
-    }
-  ];
+const historyData = {
+  Février: [
+    { day: 12, title: 'Babysitting', hours: '12h00 — 18h00', price: '20,00 €', status: 'pending' },
+    { day: 16, title: 'Ménage', hours: '11h00 — 13h00', price: '5,00 €', status: 'pending' }
+  ],
+  Janvier: [
+    { day: 16, title: 'Manucure', hours: '12h00 — 18h00', price: '35,00 €', status: 'done' },
+    { day: 16, title: 'Manucure', hours: '12h00 — 18h00', price: '35,00 €', status: 'done' },
+    { day: 16, title: 'Manucure', hours: '12h00 — 18h00', price: '35,00 €', status: 'done' }
+  ]
+};
 
 const HistoryScreen = () => {
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const openPopup = () => {
-    setModalVisible(true);
-  };
-
-  const closePopup = () => {
-    setModalVisible(false);
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Historique</Text>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>AUJOURD’HUI</Text>
-
-        {prestationData.map((item, index) => (
-  <TouchableOpacity
-    key={index}
-    style={styles.row}
-    onPress={item.showPopup ? openPopup : undefined}
-  >
-    <View>
-      <Text style={styles.label}>
-        {item.title}
-        {item.badge && <Text style={styles.badge}> {item.badge}</Text>}
-      </Text>
-      <Text style={styles.worker}>{item.name}</Text>
-    </View>
-    <Text style={styles.price}>{item.price}</Text>
-  </TouchableOpacity>
-))}
-      </View>
-
-      {/* POPUP */}
-      <Modal transparent visible={modalVisible} animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Babysitting</Text>
-            <Text style={styles.modalSub}>Patrick.C</Text>
-
-            <TouchableOpacity style={styles.greenButton}>
-              <Text style={styles.greenButtonText}>Télécharger la fiche de suivi</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.redButton} onPress={closePopup}>
-              <Text style={styles.redButtonText}>SIGNALER</Text>
-            </TouchableOpacity>
-          </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>HISTORIQUE</Text>
+      {Object.entries(historyData).map(([month, items], idx) => (
+        <View key={idx} style={styles.section}>
+          <Text style={styles.month}>{month}</Text>
+          {items.map((item, i) => (
+            <View key={i} style={styles.row}>
+              <View style={styles.dateIcon}>
+                <Text style={styles.dateDay}>{item.day}</Text>
+                <Text style={styles.dateMonth}>16</Text>
+              </View>
+              <View style={styles.details}>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.hours}>{item.hours}</Text>
+              </View>
+              <View style={styles.right}>
+                <Text
+                  style={[
+                    styles.price,
+                    item.status === 'done' ? styles.priceRed : styles.priceGreen
+                  ]}
+                >
+                  {item.price}
+                </Text>
+                {item.status === 'done' ? (
+                  <View style={styles.statusDone}>
+                    <Text style={styles.statusDoneText}>Terminé</Text>
+                  </View>
+                ) : (
+                  <View style={styles.circle} />
+                )}
+              </View>
+            </View>
+          ))}
         </View>
-      </Modal>
-    </View>
+      ))}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: 'white',
-    flex: 1
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 15
   },
-  title: {
-    fontSize: 22,
+  header: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20
+    alignSelf: 'center',
+    marginVertical: 10
   },
   section: {
-    marginBottom: 30
+    marginTop: 20
   },
-  sectionTitle: {
-    fontSize: 14,
+  month: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#666',
     marginBottom: 10
   },
   row: {
-    paddingVertical: 10,
-    borderBottomColor: '#ddd',
-    borderBottomWidth: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    alignItems: 'center',
+    marginBottom: 15
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'black'
+  dateIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#f00',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10
   },
-  worker: {
+  dateDay: {
+    color: 'white',
+    fontWeight: 'bold'
+  },
+  dateMonth: {
+    color: 'white',
+    fontSize: 10
+  },
+  details: {
+    flex: 1
+  },
+  title: {
     fontSize: 14,
-    color: 'gray'
+    fontWeight: '600'
+  },
+  hours: {
+    fontSize: 12,
+    color: '#666'
+  },
+  right: {
+    alignItems: 'flex-end'
   },
   price: {
-    fontSize: 16,
     fontWeight: 'bold',
-    color: 'black'
+    marginBottom: 4
   },
-  badge: {
-    fontSize: 14,
-    color: 'green',
-    fontWeight: '500'
+  priceGreen: {
+    color: '#0a0'
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: '#00000088',
-    justifyContent: 'center',
-    alignItems: 'center'
+  priceRed: {
+    color: '#f00'
   },
-  modalBox: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center'
+  statusDone: {
+    backgroundColor: '#f00',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 2
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'black'
+  statusDoneText: {
+    color: '#fff',
+    fontSize: 12
   },
-  modalSub: {
-    fontSize: 16,
-    marginVertical: 10,
-    color: '#333'
-  },
-  greenButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    marginVertical: 10
-  },
-  greenButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14
-  },
-  redButton: {
-    backgroundColor: '#f44336',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8
-  },
-  redButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14
+  circle: {
+    width: 18,
+    height: 18,
+    borderWidth: 2,
+    borderColor: '#0a0',
+    borderRadius: 9
   }
 });
 

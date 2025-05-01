@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import config from '../../config.json';
+import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
+import { useFonts } from 'expo-font';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -56,6 +58,11 @@ const AddJobScreen = () => {
   const [metierNames, setMetierNames] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+
+  let [fontsLoaded] = useFonts({
+      BebasNeue: BebasNeue_400Regular,
+      
+    });
 
   const getAllMetierNames = async () => {
     try {
@@ -170,7 +177,7 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily : 'BebasNeue',
     flexShrink: 1,
   },
   skeletonTextWrapper: {
