@@ -8,7 +8,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.starset.starset",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+         "NSSpeechRecognitionUsageDescription": "Cette application utilise la reconnaissance vocale pour améliorer votre expérience utilisateur."
+      },
+      "buildNumber" : "3"
+      
     },
     "android": {
       "adaptiveIcon": {
