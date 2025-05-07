@@ -47,7 +47,7 @@ export default function TabNavigator() {
     
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: '#00A65A',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,

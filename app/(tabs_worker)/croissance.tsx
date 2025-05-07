@@ -201,7 +201,6 @@ const styles = StyleSheet.create({
     color: '#000',
     marginTop : 20,
     textAlign : 'center'
-
   },
   
   workerImage: {

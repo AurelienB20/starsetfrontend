@@ -29,7 +29,11 @@ const InterestsScreen = () => {
 
       console.log("data.fields", data.fields);
       if (data.success) {
-        setInterests(data.fields);
+        setInterests(
+          data.fields
+            .map((field: string) => field.trim())
+            .filter((field: string) => field.length > 0)
+        );
       } else {
         Alert.alert('Erreur', 'Impossible de récupérer les centres d’intérêts');
       }

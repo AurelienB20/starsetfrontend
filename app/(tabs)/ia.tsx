@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'rgba(0, 128, 0, 0.5)', // Vert avec transparence
     borderTopColor: 'transparent',
-    animation: 'spin 1s linear infinite', // Rotation infinie
+    //animation: 'spin 1s linear infinite', // Rotation infinie
   },
   scrollContainer : {
     

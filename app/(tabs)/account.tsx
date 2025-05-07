@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Modal, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Modal, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Assurez-vous d'avoir installé cette bibliothèque
 import { saveMode } from '../chooseAccount';
@@ -166,6 +166,43 @@ const AccountScreen = () => {
   const openHistoryModal = async () => {
     await getUserPlannedPrestation(); // Récupère les prestations planifiées
     setHistoryModalVisible(true); // Affiche le modal après récupération des données
+  };
+
+  const cancelPrestation = (prestationId: string) => {
+    Alert.alert(
+      'Confirmation',
+      'Êtes-vous sûr de vouloir annuler cette prestation ?',
+      [
+        {
+          text: 'Non',
+          style: 'cancel',
+        },
+        {
+          text: 'Oui',
+          onPress: async () => {
+            try {
+              const response = await fetch(`${config.backendUrl}/api/mission/cancel-prestation`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prestationId }),
+              });
+  
+              if (!response.ok) throw new Error('Échec de l’annulation');
+  
+              // Recharge les prestations après annulation
+              await getUserPlannedPrestation();
+              Alert.alert('Succès', 'Prestation annulée avec succès.');
+            } catch (err) {
+              console.error(err);
+              Alert.alert('Erreur', 'Impossible d’annuler la prestation.');
+            }
+          },
+          style: 'destructive',
+        },
+      ]
+    );
   };
 
   
@@ -374,9 +411,17 @@ const AccountScreen = () => {
 
                           {/* Label de statut dynamique */}
                           {prestation.status === "waiting" && (
-                            <View style={[styles.statusBadge, { backgroundColor: 'orange' }]}>
-                              <Text style={styles.statusText}>Waiting</Text>
-                            </View>
+                            <>
+                              <View style={[styles.statusBadge, { backgroundColor: 'orange' }]}>
+                                <Text style={styles.statusText}>Waiting</Text>
+                              </View>
+                              <TouchableOpacity
+                                style={styles.cancelButton}
+                                onPress={() => cancelPrestation(prestation._id)} // <-- Utilise l'ID de la prestation
+                              >
+                                <Text style={styles.cancelButtonText}>Annuler</Text>
+                              </TouchableOpacity>
+                            </>
                           )}
                           {prestation.status === "inProgress" && (
                             <View style={[styles.statusBadge, { backgroundColor: '#00cc66' }]}>
@@ -709,6 +754,21 @@ const styles = StyleSheet.create({
   },
   menuIcon: {
     marginRight: 10,
+  },
+
+  cancelButton: {
+    marginTop: 8,
+    backgroundColor: '#FF3B30',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  
+  cancelButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });
 

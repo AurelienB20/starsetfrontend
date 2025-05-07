@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import config from '../config.json';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useUser } from '@/context/userContext';
@@ -81,55 +81,61 @@ const VerificationScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Vérification de votre adresse e-mail</Text>
-      <Text style={styles.infoText}>
-        Pour sécuriser votre compte, nous avons besoin de vérifier votre adresse e-mail.
-      </Text>
-
-      <Text style={styles.label}>
-        {isCodeSent ? 'Vous pouvez renvoyer un e-mail si besoin :' : `Envoyer un e-mail de vérification à ${email}`}
-      </Text>
-
-      {!isCodeSent ? (
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={sendCode}
-          disabled={isLoading}
-        >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Envoi en cours...' : 'Envoyer l’e-mail'}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
+        <Text style={styles.title}>Vérification de votre adresse e-mail</Text>
+          <Text style={styles.infoText}>
+            Pour sécuriser votre compte, nous avons besoin de vérifier votre adresse e-mail.
           </Text>
-        </TouchableOpacity>
-      ) : (
-        <>
-          <Text style={styles.label}>Entrez le code reçu par e-mail :</Text>
-          <TextInput
-            style={styles.input}
-            value={verificationCode}
-            onChangeText={handleCodeChange}
-            maxLength={6}
-            keyboardType="numeric"
-          />
-          <Text style={styles.charCount}>{charCount}/6</Text>
 
-          {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-          {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
-          <Text style={styles.tipText}>
-            📩 Si vous ne voyez pas l’e-mail, pensez à vérifier dans vos spams.
+          <Text style={styles.label}>
+            {isCodeSent ? 'Vous pouvez renvoyer un e-mail si besoin :' : `Envoyer un e-mail de vérification à ${email}`}
           </Text>
-          <TouchableOpacity
-            style={styles.verifyButton}
-            onPress={verifyCode}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Vérification en cours...' : 'Vérifier le code'}
-            </Text>
-          </TouchableOpacity>
-        </>
-      )}
-    </View>
+
+          {!isCodeSent ? (
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={sendCode}
+              disabled={isLoading}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Envoi en cours...' : 'Envoyer l’e-mail'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <Text style={styles.label}>Entrez le code reçu par e-mail :</Text>
+              <TextInput
+                style={styles.input}
+                value={verificationCode}
+                onChangeText={handleCodeChange}
+                maxLength={6}
+                keyboardType="numeric"
+              />
+              <Text style={styles.charCount}>{charCount}/6</Text>
+
+              {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+              {successMessage && <Text style={styles.successText}>{successMessage}</Text>}
+              
+              <TouchableOpacity
+                style={styles.verifyButton}
+                onPress={verifyCode}
+                disabled={isLoading}
+              >
+                <Text style={styles.buttonText}>
+                  {isLoading ? 'Vérification en cours...' : 'Vérifier le code'}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+    
   );
 };
 

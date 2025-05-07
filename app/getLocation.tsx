@@ -22,7 +22,7 @@ const LocationPickerScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Recherchez votre adresse (optionnel)</Text>
+      <Text style={styles.title}>entrer votre adresse postale (optionnel)</Text>
       <Text style={styles.subTitle}>si vous n'ajoutez pas votre adresse vous ne pourrez commander que les services en distanciel</Text>
       
       <GooglePlacesAutocomplete

@@ -4,7 +4,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import config from '../config.json';
-import FastImage from 'react-native-fast-image';
+
 import { Image } from 'expo-image';
 
 const StarsetScreen = () => {
