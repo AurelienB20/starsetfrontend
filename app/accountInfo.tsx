@@ -11,7 +11,7 @@ import { Platform } from 'react-native';
 const AccountInfoScreen = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [birthDate, setBirthDate] = useState(new Date());
+  const [birthDate, setBirthDate] = useState<any>(null);
   
   const [phoneNumber, setPhoneNumber] = useState('');
   const phoneInputRef = useRef<PhoneInput>(null);
