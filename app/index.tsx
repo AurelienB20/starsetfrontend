@@ -1,28 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import config from '../config.json';
 import { Image } from 'expo-image';
 import { useUser } from '@/context/userContext';
+import { useAllWorkerPrestation } from '@/context/userContext';
 
 const StarsetScreen = () => {
   const [progress, setProgress] = useState(0);
   const [showGif, setShowGif] = useState(true); // État pour afficher le GIF ou l'image statique
   const { setUser } = useUser()
+  const { setAllWorkerPrestation } = useAllWorkerPrestation()
   const navigation = useNavigation();
 
   const getAccountId = async () => {
     try {
       const account_id = await AsyncStorage.getItem('account_id');
-      console.log("account_id 123")
-      console.log(account_id)
       if (account_id !== null) {
         return account_id;
       }
     } catch (e) {
       console.error('Erreur lors de la récupération du type de compte', e);
+    }
+  };
+
+  const getAllWorkerPrestation = async () => {
+    try {
+      const account_id = await getAccountId();
+      const response = await fetch(`${config.backendUrl}/api/mission/get-all-prestation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ account_id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+      setAllWorkerPrestation(data.prestations);
+    } catch (error) {
+      console.error('Une erreur est survenue lors de la récupération des prestations:', error);
     }
   };
 
@@ -46,8 +67,6 @@ const StarsetScreen = () => {
       console.log('Utilisateur chargé:', data.account);
   
       setUser(data.account); // Met à jour le contexte utilisateur
-  
-      console.log('test putain j espere ca marche')
       // 🚨 Redirection ici selon verified
       if (!data.account.verified) {
         navigation.navigate('(tabs)' as never);
@@ -61,9 +80,6 @@ const StarsetScreen = () => {
   };
 
   useEffect(() => {
-    
-
-    
 
     const interval = setInterval(() => {
       setProgress((prev) => {
@@ -72,6 +88,7 @@ const StarsetScreen = () => {
         } else {
           clearInterval(interval);
           getProfile()
+          getAllWorkerPrestation()
           return prev;
         }
       });

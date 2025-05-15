@@ -222,7 +222,7 @@ const SearchScreen = () => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.fakeSearchBar}>
   <Ionicons name="location-sharp" size={16} color="#999" style={{ marginRight: 8 }} />
-  <Text style={styles.fakeSearchText}>Autour de chez vous</Text>
+  <Text style={styles.fakeSearchText}>Top Worker</Text>
 </TouchableOpacity>
           <FlatList
             data={prestations}

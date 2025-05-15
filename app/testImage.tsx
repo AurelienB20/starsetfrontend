@@ -12,7 +12,7 @@ const PrestationViewScreen = () => {
     inputRange: [0, 150],
     outputRange: [120, 80],
     extrapolate: 'clamp',
-  });
+  });//test
 
   return (
     <View style={styles.container}>

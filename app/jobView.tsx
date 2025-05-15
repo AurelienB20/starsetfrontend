@@ -5,9 +5,11 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import config from '../config.json';
 import {  BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { useFonts } from 'expo-font';
+import { useAllWorkerPrestation } from '@/context/userContext';
 
 const JobViewScreen = () => {
   const [metier, setMetier] = useState<any>(null);
+  const { allWorkerPrestation,setAllWorkerPrestation } = useAllWorkerPrestation()
   const navigation = useNavigation()
   const route = useRoute() as any;
   const {selectedJob} = route.params || '';
@@ -70,6 +72,12 @@ const JobViewScreen = () => {
     }
   };
 
+  // Vérifie si le métier est déjà ajouté
+  const isJobAlreadyAdded = allWorkerPrestation?.some(
+    (item: any) => item.metier === metier.name
+  );
+
+
   // Charger les données au montage du composant
   useEffect(() => {
     getMetierByName();
@@ -127,9 +135,24 @@ const JobViewScreen = () => {
       )}
 
       {/* Bouton Ajouter */}
-      <TouchableOpacity style={styles.addButton} onPress={handleValidation}>
-        <Text style={styles.addButtonText}>+ Ajouter</Text>
+      <TouchableOpacity
+        style={[
+          styles.addButton,
+          isJobAlreadyAdded && styles.disabledButton
+        ]}
+        onPress={!isJobAlreadyAdded ? handleValidation : undefined}
+        disabled={isJobAlreadyAdded}
+      >
+        <Text style={styles.addButtonText}>
+          {isJobAlreadyAdded ? 'Déjà ajouté' : '+ Ajouter'}
+        </Text>
       </TouchableOpacity>
+
+      {isJobAlreadyAdded && (
+        <Text style={styles.infoText}>
+          Vous avez déjà ajouté ce métier.
+        </Text>
+      )}
     </ScrollView>
   );
 };
@@ -191,6 +214,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  disabledButton: {
+    backgroundColor: '#999', // Plus foncé
+  },
+
+  infoText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
   },
 });
 

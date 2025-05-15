@@ -318,7 +318,7 @@ const AccountScreen = () => {
 <TouchableOpacity style={styles.menuItem} onPress={goToAvailability}>
   <View style={styles.iconWithText}>
     <FontAwesome name="calendar-check-o" size={20} color="#000" style={styles.menuIcon} />
-    <Text style={styles.menuItemText}>Availability</Text>
+    <Text style={styles.menuItemText}>Disponibilité</Text>
   </View>
 </TouchableOpacity>
 

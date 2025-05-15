@@ -159,7 +159,6 @@ const JobsScreen = () => {
   
   
   const openWorkerRequestModal = async () => {
-    
     setWorkerRequestModalVisible(true);
   };
 

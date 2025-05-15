@@ -118,17 +118,35 @@ export default function TabNavigator() {
   name="account_worker"
   options={{
     title: '',
-    tabBarButton: (props) => (
-      <Pressable
-        {...props}
-        onLongPress={() => {setPopupVisible(true), console.log(123), console.log(isPopupVisible)}
-      }
-        onPress={props.onPress} // conserve la navigation
-        style={props.style}
-      >
-        <Ionicons name="person" size={28} color={props.accessibilityState?.selected ? Colors[colorScheme ?? 'light'].tint : 'gray'} />
-      </Pressable>
-    ),
+    tabBarButton: (props: any) => {
+      const CustomTabBarButton = React.forwardRef<any, any>((innerProps, ref) => (
+        <Pressable
+          ref={ref}
+          {...innerProps}
+          onLongPress={() => {
+            setPopupVisible(true);
+            console.log(123);
+            console.log(isPopupVisible);
+          }}
+          onPress={innerProps.onPress}
+          style={innerProps.style}
+        >
+          <Ionicons
+            name="person"
+            size={28}
+            color={
+              innerProps.accessibilityState?.selected
+                ? Colors[colorScheme ?? 'light'].tint
+                : 'gray'
+            }
+          />
+        </Pressable>
+      ));
+    
+      return <CustomTabBarButton {...props} />;
+    },
+    
+    
   }}
 />   
     </Tabs>

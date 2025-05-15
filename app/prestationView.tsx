@@ -979,6 +979,7 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 14,
     fontFamily : 'JosefinSans_700Bold',
+    textAlign: 'center'
   },
 
   photosContainer: {
